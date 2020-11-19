@@ -12,7 +12,7 @@ securities = read.csv("securities.csv")
 fund = read.csv("fundamentals.csv")
 psa = read.csv("prices-split-adjusted.csv")
 
-# subset dataset to Netflix data only
+# subset dataset to Nvidia data only
 nvdaprices = prices[prices$symbol=="NVDA",]
 
 row.names(nvdaprices) = NULL
