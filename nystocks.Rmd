@@ -1,0 +1,59 @@
+---
+title: "nystocks"
+output: pdf_document
+---
+
+```{r}
+
+# NY STOCK for multiple regression
+
+prices = read.csv("prices.csv")
+securities = read.csv("securities.csv")
+fund = read.csv("fundamentals.csv")
+psa = read.csv("prices-split-adjusted.csv")
+
+# subset dataset to Netflix data only
+nvdaprices = prices[prices$symbol=="NVDA",]
+
+
+mdl = lm(close~open+low+high+volume, data = nvdaprices)
+logmdl = lm(log(close)~open+low+high+volume, data = nvdaprices)
+y2mdl = lm(close^2~open+low+high+volume,nvdaprices)
+sqrtymdl = lm(sqrt(close)~open+low+high+volume,nvdaprices)
+
+# best transformation, highest correlation and fixed constant variance
+# more data on the left side of residuals vs fitted
+# normality is adequate
+# linearity met on 
+
+sqrtmdl = lm(sqrt(close)~sqrt(open) + sqrt(low) +sqrt(high) +sqrt(volume), 
+             nvdaprices)
+
+# linearity met as points are situated around zero
+plot(sqrtmdl, which = 1)
+
+# normality is adequate slight positive skew at the right tail and slight
+# negative skew on the left tail
+plot(sqrtmdl, which = 2)
+
+# constant variance met if more data points are on the right
+plot(sqrtmdl, which = 3)
+
+# point 850101 is outside cook's distance thus is a influential point
+# point 834601 is far on the right thus is potentially a leverage point
+plot(sqrtmdl, which = 5)
+
+library(faraway)
+influ = influence(sqrtmdl)
+head(sort(influ$hat, decreasing = TRUE))
+
+cooks = cooks.distance(sqrtmdl)
+head(sort(cooks,decreasing = TRUE))
+
+# Point 850101 has the highest cook's distance and greater than 1 thus influential
+# Point 834601 and 850101 has the highest influence thus leverage point
+
+library(dplyr)
+
+```
+
