@@ -1,0 +1,41 @@
+---
+title: "Telecommunications"
+output: pdf_document
+---
+
+```{r}
+prices = read.csv("prices.csv")
+securities = read.csv("securities.csv")
+fund = read.csv("fundamentals.csv")
+psa = read.csv("prices-split-adjusted.csv")
+
+# Ticker symbols of telecommunications companies
+TeleSymbol = securities[securities$GICS.Sector == 
+                          "Telecommunications Services", "Ticker.symbol"]
+
+# subset dataset to Tech Companies
+
+teleprices = psa[psa$symbol %in% c(TeleSymbol),]
+
+row.names(teleprices) = NULL
+
+
+mdlT = lm(close ~ open + low + high + volume, 
+           data = teleprices[teleprices$symbol == "T",])
+
+mdlCTL = lm(close ~ open + low + high + volume, 
+           data = teleprices[teleprices$symbol == "CTL",])
+
+mdlFTR = lm(close ~ open + low + high + volume, 
+           data = teleprices[teleprices$symbol == "FTR",])
+
+mdlLVLT = lm(close ~ open + low + high + volume, 
+           data = teleprices[teleprices$symbol == "LVLT",])
+
+mdlVZ = lm(close ~ open + low + high + volume, 
+           data = teleprices[teleprices$symbol == "VZ",])
+
+
+
+```
+
