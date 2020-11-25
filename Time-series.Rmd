@@ -1,0 +1,53 @@
+---
+title: "Time series for each telecoms"
+output: html_document
+---
+
+
+```{r}
+library(tidyverse)
+library(forcats)
+library(lubridate)
+
+prices = read.csv("prices.csv")
+securities = read.csv("securities.csv")
+fund = read.csv("fundamentals.csv")
+psa = read.csv("prices-split-adjusted.csv")
+
+
+# Ticker symbols of telecommunications companies
+TeleSymbol = securities[securities$GICS.Sector == 
+                          "Telecommunications Services", "Ticker.symbol"]
+
+# Time series for each company
+
+
+T_data = telecoms %>%  filter(symbol == "T") %>% mutate(Date = ymd(date))
+
+ggplot(data = T_data , aes(x = Date, y = close)) + geom_line()
+
+CTL_data = telecoms %>%  filter(symbol == "CTL") %>% mutate(Date = ymd(date))
+
+ggplot(data = CTL_data , aes(x = Date, y = close)) + geom_line()
+
+FTR_data = telecoms %>%  filter(symbol == "FTR") %>% mutate(Date = ymd(date))
+
+ggplot(data = FTR_data , aes(x = Date, y = close)) + geom_line()
+
+LVLT_data = telecoms %>%  filter(symbol == "LVLT") %>% mutate(Date = ymd(date))
+
+ggplot(data = LVLT_data , aes(x = Date, y = close)) + geom_line()
+
+VZ_data = telecoms %>%  filter(symbol == "VZ") %>% mutate(Date = ymd(date))
+
+ggplot(data = VZ_data , aes(x = Date, y = close)) + geom_line()
+
+telecoms = psa %>% filter(psa$symbol == "T" |psa$symbol == "CTL" | psa$symbol =="FTR"| psa$symbol == "LVLT"| psa$symbol == "VZ") %>% mutate(Date = ymd(date))
+
+ggplot(data = telecoms , aes(x = Date, y = close, group = symbol )) + geom_line(aes(color = symbol))
+
+
+
+
+```
+
