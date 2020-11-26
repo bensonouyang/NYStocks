@@ -19,6 +19,8 @@ teleprices = psa[psa$symbol %in% c(TeleSymbol),]
 
 row.names(teleprices) = NULL
 
+# teleprices$year = substr(teleprices$date, start = 1, stop = 4)
+
 
 mdlT = lm(close ~ open + low + high + volume, 
            data = teleprices[teleprices$symbol == "T",])
@@ -37,5 +39,127 @@ mdlVZ = lm(close ~ open + low + high + volume,
 
 
 
+```
+
+```{r}
+avPlots(mdlT)
+avPlots(mdlCTL)
+avPlots(mdlFTR)
+avPlots(mdlLVLT)
+avPlots(mdlVZ)
+
+
+```
+
+
+
+```{r}
+plot(teleprices[teleprices$symbol=="T","open"],
+     teleprices[teleprices$symbol=="T","close"], xlab = "Open Price", 
+     ylab = "Close Price", main = "AT&T Inc Open vs Close")
+
+plot(teleprices[teleprices$symbol=="T","low"],
+     teleprices[teleprices$symbol=="T","close"], xlab = "Low Price", 
+     ylab = "Close Price", main = "AT&T Inc Low vs Close")
+
+plot(teleprices[teleprices$symbol=="T","high"],
+     teleprices[teleprices$symbol=="T","close"], xlab = "High Price", 
+     ylab = "Close Price", main = "AT&T Inc High vs Close")
+
+plot(teleprices[teleprices$symbol=="T","volume"],
+     teleprices[teleprices$symbol=="T","close"], xlab = "Volume", 
+     ylab = "Close Price", main = "AT&T Inc Volume vs Close")
+```
+
+
+```{r}
+library(reshape2)
+library(tidyverse)
+
+df = melt(teleprices, id.vars = c("open","close","low","high","volume"),
+          measure.vars = c("symbol"))
+
+(p1 = ggplot(df, aes(value,close, fill = value)) + geom_boxplot()+ 
+                labs(x = "Companies",y = "Close Price",
+        title = "Boxplot of All Telecommunication Services and Close Price"))
+
+(p2 = ggplot(df, aes(value,open, fill = value)) + geom_boxplot()+ 
+                labs(x = "Companies",y = "Open Price",
+        title = "Boxplot of All Telecommunication Services and Open Price"))
+
+(p3 = ggplot(df, aes(value,low, fill = value)) + geom_boxplot()+ 
+                labs(x = "Companies",y = "Low Price",
+        title = "Boxplot of All Telecommunication Services and Low Price"))
+
+(p4 = ggplot(df, aes(value,high, fill = value)) + geom_boxplot()+ 
+                labs(x = "Companies",y = "High Price",
+        title = "Boxplot of All Telecommunication Services and High Price"))
+
+(p5 = ggplot(df, aes(value,volume, fill = value)) + geom_boxplot()+ 
+                labs(x = "Companies",y = "Volume",
+        title = "Boxplot of All Telecommunication Services and Volume")+ 
+                coord_cartesian(ylim = c(0,1e+08)))
+```
+
+
+```{r}
+library(caret)
+
+set.seed(123)
+
+df = teleprices[teleprices$symbol=="T",]
+
+nsamp=ceiling(0.8*length(df$close))
+training_samps=sample(c(1:length(df$close)),
+                      nsamp)
+training_samps=sort(training_samps)
+train_data  <- df[training_samps, ]
+test_data <-   df[-training_samps, ]
+
+
+train.lm <- lm(close ~ open + low + high + volume, 
+               data = df)
+
+summary(train.lm)
+
+preds <- predict(train.lm,test_data)
+
+plot(test_data$close,preds)
+abline(c(0,1))
+
+R.sq = R2(preds, test_data$close)
+RMSPE = RMSE(preds, test_data$close)
+MAPE = MAE(preds, test_data$close)
+NSE=1-RMSPE^2/var(test_data$close)
+print(c(R.sq,RMSPE,MAPE,NSE))
+
+set.seed(123)
+
+for(i in 1:10){
+
+nsamp=ceiling(0.8*length(df$close))
+training_samps=sample(c(1:length(df$close)),
+                      nsamp)
+training_samps=sort(training_samps)
+train_data  <- df[training_samps, ]
+test_data <-   df[-training_samps, ]
+
+
+train.lm <- lm(close ~ open + low + high + volume, 
+               data = df)
+
+summary(train.lm)
+
+preds <- predict(train.lm,test_data)
+
+plot(test_data$close,preds)
+abline(c(0,1))
+
+R.sq = R2(preds, test_data$close)
+RMSPE = RMSE(preds, test_data$close)
+MAPE = MAE(preds, test_data$close)
+NSE=1-RMSPE^2/var(test_data$close)
+print(c(R.sq,RMSPE,MAPE,NSE))        
+}
 ```
 
