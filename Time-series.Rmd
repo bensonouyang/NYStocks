@@ -47,7 +47,6 @@ telecoms = psa %>% filter(psa$symbol == "T" |psa$symbol == "CTL" | psa$symbol ==
 ggplot(data = telecoms , aes(x = Date, y = close, group = symbol )) + geom_line(aes(color = symbol))
 
 
-print("hello")
 
 ```
 
