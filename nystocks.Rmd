@@ -4,6 +4,7 @@ output: pdf_document
 ---
 
 ```{r}
+# https://www.diva-portal.org/smash/get/diva2:692167/FULLTEXT01.pdf
 
 # NY STOCK for multiple regression
 
@@ -12,12 +13,77 @@ securities = read.csv("securities.csv")
 fund = read.csv("fundamentals.csv")
 psa = read.csv("prices-split-adjusted.csv")
 
+# Ticker symbols of tech companies
+
+TechSymbol = securities[securities$GICS.Sector == 
+                          "Information Technology", "Ticker.symbol"]
+
 # subset dataset to Nvidia data only
-nvdaprices = prices[prices$symbol=="NVDA",]
+nvdaprices = psa[psa$symbol=="NVDA",]
+
+# subset dataset to Tech Companies
+
+techprices = psa[psa$symbol %in% c(TechSymbol),]
+
+row.names(techprices) = NULL
 
 row.names(nvdaprices) = NULL
 
+# removes NAs
+# fund[complete.cases(fund),]
 
+
+#difference = techprices$difference
+#close = techprices$close
+#open = techprices$open
+
+# techprices$difference = 0
+
+#for(i in 1:nrow(techprices))
+#{
+#  techprices$difference[i] = (techprices$close[i]/techprices$open[i])
+#  if(techprices$difference[i] > 1)
+#  {
+#    techprices$difference[i] = techprices$difference[i] - 1
+#  }
+#  else if(techprices$difference[i] < 1)
+#  {
+  #  techprices$difference[i] = techprices$difference[i] - 1
+ # }
+#}
+
+#for( i in unique(techprices$symbol)){
+ # print(techprices[techprices$symbol == i,])
+#}
+
+#techprices$rollingdiff = 0
+
+#for( i in unique(techprices$symbol)){
+#  for(j in 1:nrow(techprices[techprices$symbol == i,])-1){
+    
+    #if(j == 1){
+   #   techprices[techprices$symbol == i, "rollingdiff"][j] = 
+   #     techprices[techprices$symbol == i, "difference"][j]
+   # }
+    #else{
+      #techprices[techprices$symbol == i, "rollingdiff"][j] = 
+      #techprices[techprices$symbol == i, "rollingdiff"][j-1] +
+      #[techprices$symbol == i, "difference"][j]
+    #}
+    
+    
+  #}
+  
+#}
+
+#for(i in unique(securities$GICS.Sector)){
+  #print(i)
+  #print(securities[securities$GICS.Sector == i, "Ticker.symbol"])
+#}
+
+```
+
+```{r}
 mdl = lm(close~open+low+high+volume, data = nvdaprices)
 logmdl = lm(log(close)~open+low+high+volume, data = nvdaprices)
 y2mdl = lm(close^2~open+low+high+volume,nvdaprices)
@@ -56,8 +122,5 @@ head(sort(cooks,decreasing = TRUE))
 # Point 1729 and 1760 has the highest influence thus leverage point
 
 library(dplyr)
-
-
-
 ```
 
