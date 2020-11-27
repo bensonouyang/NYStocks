@@ -1,0 +1,254 @@
+---
+title: "Test"
+author: "Victor"
+date: "21/11/2020"
+output: html_document
+---
+```{r}
+
+library(tidyverse)
+
+
+# Testing prediction models for the telecoms companies
+
+
+prices = read.csv("prices.csv")
+securities = read.csv("securities.csv")
+fund = read.csv("fundamentals.csv")
+psa = read.csv("prices-split-adjusted.csv")
+
+
+
+
+
+
+# can subset it this way 
+T_data = telecoms %>%  filter(symbol == "T")
+T_data
+
+mdl_t = lm(close~ open + close + low + high + volume, T_data)
+summary(mdl_t)
+
+
+
+
+
+
+
+
+TeleSymbol = securities[securities$GICS.Sector == 
+                          "Telecommunications Services", "Ticker.symbol"]
+# subset dataset to Tech Companies
+
+
+row.names(teleprices) = NULL
+
+mdlT = lm(close ~ open + low + high + volume, 
+           data = teleprices[teleprices$symbol == "T",])
+mdlCTL = lm(close ~ open + low + high + volume, 
+           data = teleprices[teleprices$symbol == "CTL",])
+mdlFTR = lm(close ~ open + low + high + volume, 
+           data = teleprices[teleprices$symbol == "FTR",])
+mdlLVLT = lm(close ~ open + low + high + volume, 
+           data = teleprices[teleprices$symbol == "LVLT",])
+mdlVZ = lm(close ~ open + low + high + volume, 
+           data = teleprices[teleprices$symbol == "VZ",])
+
+
+summary(mdlT)
+
+summary(mdlCTL)
+
+summary(mdlFTR)
+
+summary(mdlLVLT)
+
+summary(mdlVZ)
+
+
+
+
+
+
+
+
+
+# for prices 
+check = prices %>% filter(symbol == "T")
+head(check)
+mdlcheck = lm(close~ open + low + high + volume, check)
+summary(mdlcheck)
+
+
+
+
+# for fund
+fund_check = fund %>% filter(Ticker.Symbol == "T")
+fund_check
+#
+T_data
+fund_check
+
+fund_info = fund[fund$Ticker.Symbol %in% c(TeleSymbol),]
+
+row.names(fund_info) = NULL
+fund_info
+
+
+
+```
+
+vol = # of shares traded that day
+open/close
+split => selling stock portion of the stock
+
+
+
+QUESTION: predict closing prices for stock of company in telecoms (5)
+
+-> what effect stocks 
+
+
+
+```{r}
+library(tidyverse)
+library(forcats)
+library(lubridate)
+
+psa = read.csv("prices-split-adjusted.csv")
+
+# get all telecoms into one data frame
+
+telecoms = psa %>% filter(psa$symbol == "T" |psa$symbol == "CTL" | psa$symbol =="FTR"| psa$symbol == "LVLT"| psa$symbol == "VZ") 
+                                                                          
+
+
+telecomslm = lm(close ~ open + volume, data = telecoms)
+summary(telecomslm)
+vif(telecomslm)
+plot(telecomslm)
+
+
+
+
+plot(telecomslm)
+```
+
+
+Testing models 
+
+```{r}
+library(lubridate)
+
+
+# NY STOCK for multiple regression
+
+prices = read.csv("prices.csv")
+securities = read.csv("securities.csv")
+fund = read.csv("fundamentals.csv")
+psa = read.csv("prices-split-adjusted.csv")
+
+
+
+teleprices = psa[psa$symbol %in% c(TeleSymbol),]
+
+teleprices
+# Ticker symbols of tech companies
+
+TeleSymbol = securities[securities$GICS.Sector == 
+                          "Telecommunications Services", "Ticker.symbol"]
+
+
+
+
+# this will create a new col called date in teleprices dataset and values are dates 
+teleprices$date = ymd(teleprices$date)
+teleprices$year = year(teleprices$date)-1
+teleprices$Revenue = 0
+
+teleprices = teleprices[teleprices$year %in% unique(fund$For.Year),]
+
+for(i in TeleSymbol){
+        ex = fund[fund$Ticker.Symbol == i,]
+        for(j in unique(ex$For.Year)){
+                teleprices[(teleprices$symbol == i) & (teleprices$year == j), 
+                           "Revenue"] = ex[ex$For.Year == j,"Total.Revenue"]
+                
+        }
+}
+
+
+
+mdl = lm(close ~ open + volume + Revenue, data = teleprices)
+summary(mdl)
+vif(mdl)
+
+plot(mdl)
+```
+
+
+
+```{r}
+
+# cross validation
+library(carat)
+set.seed(123)
+
+df = teleprices[teleprices$symbol=="T",]
+
+nsamp=ceiling(0.8*length(df$close))
+training_samps=sample(c(1:length(df$close)),
+                      nsamp)
+training_samps=sort(training_samps)
+train_data  <- df[training_samps, ]
+test_data <-   df[-training_samps, ]
+
+
+train.lm <- lm(close ~ open + low + high + volume, 
+               data = df)
+
+summary(train.lm)
+
+preds <- predict(train.lm,test_data)
+
+plot(test_data$close,preds)
+abline(c(0,1))
+
+R.sq = R2(preds, test_data$close)
+RMSPE = RMSE(preds, test_data$close)
+MAPE = MAE(preds, test_data$close)
+NSE=1-RMSPE^2/var(test_data$close)
+print(c(R.sq,RMSPE,MAPE,NSE))
+
+set.seed(123)
+
+for(i in 1:10){
+
+nsamp=ceiling(0.8*length(df$close))
+training_samps=sample(c(1:length(df$close)),
+                      nsamp)
+training_samps=sort(training_samps)
+train_data  <- df[training_samps, ]
+test_data <-   df[-training_samps, ]
+
+
+train.lm <- lm(close ~ open + low + high + volume, 
+               data = df)
+
+summary(train.lm)
+
+preds <- predict(train.lm,test_data)
+
+plot(test_data$close,preds)
+abline(c(0,1))
+
+R.sq = R2(preds, test_data$close)
+RMSPE = RMSE(preds, test_data$close)
+MAPE = MAE(preds, test_data$close)
+NSE=1-RMSPE^2/var(test_data$close)
+print(c(R.sq,RMSPE,MAPE,NSE))        
+}
+
+
+```
+
