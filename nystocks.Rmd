@@ -33,53 +33,6 @@ row.names(nvdaprices) = NULL
 # fund[complete.cases(fund),]
 
 
-#difference = techprices$difference
-#close = techprices$close
-#open = techprices$open
-
-# techprices$difference = 0
-
-#for(i in 1:nrow(techprices))
-#{
-#  techprices$difference[i] = (techprices$close[i]/techprices$open[i])
-#  if(techprices$difference[i] > 1)
-#  {
-#    techprices$difference[i] = techprices$difference[i] - 1
-#  }
-#  else if(techprices$difference[i] < 1)
-#  {
-  #  techprices$difference[i] = techprices$difference[i] - 1
- # }
-#}
-
-#for( i in unique(techprices$symbol)){
- # print(techprices[techprices$symbol == i,])
-#}
-
-#techprices$rollingdiff = 0
-
-#for( i in unique(techprices$symbol)){
-#  for(j in 1:nrow(techprices[techprices$symbol == i,])-1){
-    
-    #if(j == 1){
-   #   techprices[techprices$symbol == i, "rollingdiff"][j] = 
-   #     techprices[techprices$symbol == i, "difference"][j]
-   # }
-    #else{
-      #techprices[techprices$symbol == i, "rollingdiff"][j] = 
-      #techprices[techprices$symbol == i, "rollingdiff"][j-1] +
-      #[techprices$symbol == i, "difference"][j]
-    #}
-    
-    
-  #}
-  
-#}
-
-#for(i in unique(securities$GICS.Sector)){
-  #print(i)
-  #print(securities[securities$GICS.Sector == i, "Ticker.symbol"])
-#}
 
 ```
 

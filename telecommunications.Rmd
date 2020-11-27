@@ -15,7 +15,7 @@ TeleSymbol = securities[securities$GICS.Sector ==
 
 # subset dataset to Tele Companies
 
-teleprices = psa[psa$symbol %in% c(TeleSymbol),]
+teleprices = psa[psa$symbol %in% c(TeleSymbol), ]
 
 row.names(teleprices) = NULL
 
@@ -43,6 +43,7 @@ mdlVZ = lm(close ~ open + low + high + volume,
 
 ```{r}
 library(lubridate)
+library(tidyverse)
 
 # putting 2012 yearly of fund in daily 2013 psa rows
 
@@ -70,8 +71,15 @@ for(i in TeleSymbol){
 
 ```
 
+
 ```{r}
 # running regression on all variables
+
+# junk code 
+
+# useful for bypassing error contrast 
+
+# columns are linearly dependent
 
 xnames = paste0(names(select(teleprices,-c("close","symbol","date","year"))),
                 collapse = "+")
@@ -99,6 +107,64 @@ for(i in 1:nrow(teleprices))
   }
 }
 ```
+
+
+```{r}
+test = teleprices[teleprices$symbol == "T",]
+
+row.names(test) = NULL
+
+full_mdl = lm(close~ volume + Capital.Surplus + Gross.Margin + Liabilities 
+              ,test )
+
+step(full_mdl)
+
+summary(full_mdl)
+
+plot(full_mdl)
+
+library(faraway)
+
+# leverage point if hii > 2p/n
+
+influ = influence(full_mdl) # measure leverage points
+head(sort(influ$hat, decreasing = TRUE))
+
+# influential point if Di > 1
+
+cooks = cooks.distance(full_mdl) # measure influential points
+head(sort(cooks,decreasing = TRUE))
+
+# decreasing leverage points
+sort(influ$hat[influ$hat>(2*4)/nrow(test)],decreasing = TRUE) 
+
+which(cooks > 1) # no influential points
+```
+
+
+```{r}
+par(mfrow=c(2,2))
+plot(full_mdl, which = 1)
+plot(full_mdl, which = 2)
+plot(full_mdl, which = 3)
+plot(full_mdl, which = 5)
+
+# doesn't change much
+# mdllog = lm(log(close)~volume + Capital.Surplus + Gross.Margin + Liabilities 
+#              ,test)
+
+mdlsqrt = lm(close~volume + sqrt(Capital.Surplus) + sqrt(Gross.Margin) + Liabilities ,test)
+mdllog = lm(log(close)~volume + Capital.Surplus + Gross.Margin + Liabilities 
+              ,test)
+mdly2 = lm(close^2~volume + Capital.Surplus + Gross.Margin + Liabilities 
+              ,test)
+mdlsq = lm(sqrt(close)~volume + Capital.Surplus + Gross.Margin + Liabilities 
+              ,test)
+mdlinv = lm(1/(close)~volume + Capital.Surplus + Gross.Margin + Liabilities 
+              ,test)
+
+```
+
 
 
 ```{r}
