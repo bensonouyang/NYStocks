@@ -8,6 +8,7 @@ library(lubridate)
 library(tidyverse)
 library(faraway)
 library(caret)
+library(reshape2)
 ```
 
 
@@ -64,12 +65,25 @@ tprices$year = year(tprices$date)
 
 
 ```{r}
+# adding a data point at the end 
+added_obs = data.frame("2017-01-01", 30, 98323500, 9.1038e+10, 57, 1798000000)
+names(added_obs) = c("date", "close", "volume", "Capital.Surplus", 
+                     "Gross.Margin", "Liabilities")
+added_obs$date = ymd(added_obs$date)
+added_obs$year = year(added_obs$date)
+
+row.names(tprices) = NULL
+# the last row is the added observation
+tprices = rbind(tprices, added_obs)
+
 mdl = lm(close ~ volume + Capital.Surplus + Gross.Margin + Liabilities ,
          tprices)
 
 summary(mdl)
 
 ```
+
+
 ```{r}
 ggplot(data = tprices , aes(x = date, y = close)) + geom_line() + 
     ggtitle("Market Close Price of AT&T Over the Years") + xlab("Time") + 
@@ -81,7 +95,7 @@ ggplot(data = tprices , aes(x = date, y = close)) + geom_line() +
     geom_point(aes(x = tprices[date == "2015-01-02", "date"], 
                    y = tprices[date == "2015-01-02", "close"]), color = "red") + 
     geom_point(aes(x = tprices[date == "2016-01-04", "date"], 
-                   y = tprices[date == "2016-01-04", "close"]), color = "red") +
+                   y = tprices[date == "2016-01-04", "close"]), color = "red") 
   
 
 ggplot(data = tprices, 
@@ -111,6 +125,106 @@ ggplot(data = tprices, aes(x = year, y = Liabilities)) + geom_point() +
 ggplot(data = tprices, aes(x = year, y = Gross.Margin)) + geom_point() +
   labs(x = "Year", y = "Gross Margin", 
          title = "Gross Margin of AT&T Over the Years")
+
+pairs(tprices)
+
+# adapted from http://www.sthda.com/english/wiki/ggplot2-quick-correlation-
+# matrix-heatmap-r-software-and-data-visualization
+
+# gathered the columns we needed and made data frame into a matrix
+
+tmat = as.matrix(select(tprices,-c("date","year")))
+
+# get the correlation between the columns
+tcor = round(cor(tmat),2)
+
+# function to just get the upper triangle of values for heatmap
+get_upper_tri <- function(cormat){
+    cormat[lower.tri(cormat)]<- NA
+    return(cormat)
+}
+
+# reorder the correlation matrix based on its correlation
+
+reorder_cormat <- function(cormat){
+# Use correlation between variables as distance
+dd <- as.dist((1-cormat)/2)
+hc <- hclust(dd)
+cormat <-cormat[hc$order, hc$order]
+}
+
+tcor = reorder_cormat(tcor)
+
+upper_tri = get_upper_tri(tcor)
+
+# melt for plottable data
+
+melted = melt(upper_tri,na.rm = TRUE)
+
+# produces heat map
+
+heatmap = ggplot(data = melted, aes(Var2, Var1, fill = value))+
+ geom_tile(color = "white")+
+ scale_fill_gradient2(low = "blue", high = "red", mid = "white", 
+   midpoint = 0, limit = c(-1,1), space = "Lab", 
+   name="Pearson\nCorrelation") +
+  theme_minimal()+ 
+ theme(axis.text.x = element_text(angle = 45, vjust = 1, 
+    size = 12, hjust = 1))+
+ coord_fixed() + geom_text(aes(Var2, Var1, label = value), color = "black", 
+                           size = 4) +
+theme(
+  axis.title.x = element_blank(),
+  axis.title.y = element_blank(),
+  panel.grid.major = element_blank(),
+  panel.border = element_blank(),
+  panel.background = element_blank(),
+  axis.ticks = element_blank(),
+  legend.justification = c(1, 0),
+  legend.position = c(0.5, 0.7),
+  legend.direction = "horizontal")+
+  guides(fill = guide_colorbar(barwidth = 7, barheight = 1,
+                title.position = "top", title.hjust = 0.5)) + 
+  ggtitle("Heatmap of Correlation Between Regressors")
+
+print(heatmap)
+
+```
+
+
+```{r}
+# Cross Validation
+
+set.seed(75392)
+
+df = tprices
+
+nsamp=ceiling(0.8*length(df$close))
+training_samps=sample(c(1:length(df$close)),
+                      nsamp)
+training_samps=sort(training_samps)
+train_data  <- df[training_samps, ]
+test_data <-   df[-training_samps, ]
+
+
+train.lm <- lm(close ~ volume + Capital.Surplus + Gross.Margin + Liabilities, 
+               data = df)
+
+summary(train.lm)
+
+preds <- predict(train.lm,test_data)
+
+plot(test_data$close,preds)
+abline(c(0,1))
+
+R.sq = R2(preds, test_data$close)
+RMSPE = RMSE(preds, test_data$close)
+MAPE = MAE(preds, test_data$close)
+NSE=1-RMSPE^2/var(test_data$close)
+print(c(R.sq,RMSPE,MAPE,NSE))
+
+plot(test_data$date, test_data$close, type = 'l')
+points(test_data$date, preds, col = "red")
 
 ```
 
