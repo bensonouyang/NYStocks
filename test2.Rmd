@@ -1,0 +1,137 @@
+```{r}
+library(dplyr)
+library(car)
+
+library(lubridate)
+prices = read.csv("prices.csv")
+securities = read.csv("securities.csv")
+fund = read.csv("fundamentals.csv")
+psa = read.csv("prices-split-adjusted.csv")
+
+
+# focus mainly on psa dataset because it accounts for price splits.
+psa$difference = 0
+difference = psa$difference
+close = psa$close
+open = psa$open
+
+
+# Ticker symbols of telecommunications companies
+TeleSymbol = securities[securities$GICS.Sector == 
+                          "Telecommunications Services", "Ticker.symbol"]
+
+# subset dataset to Tele Companies
+
+teleprices = psa[psa$symbol %in% c(TeleSymbol), ]
+
+
+for(i in 1:nrow(teleprices))
+{
+  teleprices$difference[i] = (teleprices$close[i]/teleprices$open[i])
+  if(difference[i] > 1)
+  {
+    teleprices$difference[i] = teleprices$difference[i] - 1
+  }
+  else if(teleprices$difference[i] < 1)
+  {
+    teleprices$difference[i] =teleprices$difference[i] - 1
+  }
+}
+
+
+
+```
+
+```{r filtering years and combining datasets}
+teleprices$date = ymd(teleprices$date)
+teleprices$year = year(teleprices$date)-1
+
+teleprices = teleprices[teleprices$year %in% unique(fund$For.Year),]
+fundminus = select(fund,-c("X","Ticker.Symbol","Period.Ending"))
+
+# for loops to add all columns of fund into teleprices
+
+for(i in TeleSymbol){
+        ex = fund[fund$Ticker.Symbol == i,]
+        for(j in unique(ex$For.Year)){
+                for(k in names(fundminus)){
+                        if(k != "For.Year"){
+                teleprices[(teleprices$symbol == i) & (teleprices$year == j), 
+                           k] = ex[ex$For.Year == j,k]
+                        }
+                }
+        }
+}
+rownames(teleprices) = NULL
+
+# psa is now combined with fundamentals dataset
+```
+
+
+
+```{r AT&T}
+library(leaps)
+atnt = teleprices[teleprices$symbol == "T",]
+rownames(atnt) = NULL
+
+atnt = subset(atnt, select = -c(high, low, year, Changes.in.Inventories, Deferred.Liability.Charges, Effect.of.Exchange.Rate, Inventory, Misc..Stocks, Non.Recurring.Items, Other.Current.Liabilities))
+
+#scaledcols = scale(atnt[,3:74], center = TRUE)
+
+#atnt = subset(atnt, select = -c(3:74))
+
+#atnt = cbind(atnt, scaledcols)
+
+reducedatnt = atnt %>% 
+  select(date, close, volume, Capital.Surplus, Gross.Margin, Liabilities)
+
+added_obs = data.frame("2017-01-01", 30, 98323500, 9.1038e+10, 57, 1798000000)
+names(added_obs) = c("date", "close", "volume", "Capital.Surplus", "Gross.Margin", "Liabilities")
+
+# the last row is the added observation
+reducedatnt = rbind(reducedatnt, added_obs)
+
+
+
+# first proposed model
+
+full_mdl = lm(close ~ volume + Capital.Surplus + Gross.Margin + Liabilities, data = reducedatnt)
+summary(full_mdl)
+plot(full_mdl)
+
+# Transformation of the response variables
+
+full_mdl = lm(sqrt(close) ~ volume + Capital.Surplus + Gross.Margin + Liabilities, data = reducedatnt)
+
+full_mdl = lm(log(close) ~ volume + Capital.Surplus + Gross.Margin + Liabilities, data = reducedatnt)
+
+full_mdl = lm(1/(close) ~ volume + Capital.Surplus + Gross.Margin + Liabilities, data = reducedatnt)
+
+summary(full_mdl)
+
+
+# Transformation of the predictor variables
+full_mdl = lm(close ~ log(volume + Capital.Surplus + Gross.Margin + Liabilities), data = reducedatnt)
+summary(full_mdl) # very bad, drops r^2 to 27.8%
+
+full_mdl = lm(close ~ volume + Capital.Surplus + Gross.Margin + Liabilities, data = reducedatnt)
+
+
+
+
+```
+
+
+
+```{r Using 2013-2015 data to predict 2016}
+
+reducedatnt.test = reducedatnt %>% 
+  filter(date < "2016-01-01")
+
+reducedatnt.preds = reducedatnt %>% 
+  filter(date > "2015-12-31")
+
+reducedatnt.testlm = lm(close ~ volume + Capital.Surplus + Gross.Margin + Liabilities, data = reducedatnt.test)
+summary(reducedatnt.testlm)
+```
+
