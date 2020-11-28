@@ -1,0 +1,116 @@
+---
+title: "Multiple Linear Regression on AT&T Stock"
+output: pdf_document
+---
+
+```{r}
+library(lubridate)
+library(tidyverse)
+library(faraway)
+library(caret)
+```
+
+
+```{r}
+# securities is the dataset containing sector information 
+securities = read.csv("securities.csv")
+
+# fund contains yearly fundamental information about each company 
+fund = read.csv("fundamentals.csv")
+
+# psa contains adjusted prices of daily stock prices
+psa = read.csv("prices-split-adjusted.csv")
+
+# adjusted prices for company AT&T
+
+tprices = psa[psa$symbol == "T",]
+
+# reset indexes
+row.names(tprices) = NULL
+```
+
+
+```{r}
+# change date to datetime object
+tprices$date = ymd(tprices$date)
+
+# placeholder for column names in for loop
+fundminus = select(fund,-c("X","Ticker.Symbol","Period.Ending","For.Year"))
+
+
+# separate fund data corresponding to tprices only
+ex = fund[fund$Ticker.Symbol == "T",]
+
+# adding last years yearly info into present year
+tprices$year = year(tprices$date)-1
+tprices = tprices[tprices$year %in% unique(ex$For.Year),]
+
+# for loops to add all columns of fund into tprices
+
+for(j in unique(ex$For.Year)){
+  for(k in names(fundminus)){
+    tprices[tprices$year == j, k] = ex[ex$For.Year == j, k]
+  }
+}
+
+
+tprices = select(tprices, c("close","volume","date", "year",
+                            "Capital.Surplus","Gross.Margin","Liabilities"))
+
+tprices$year = year(tprices$date)
+
+```
+
+
+
+```{r}
+mdl = lm(close ~ volume + Capital.Surplus + Gross.Margin + Liabilities ,
+         tprices)
+
+summary(mdl)
+
+```
+```{r}
+ggplot(data = tprices , aes(x = date, y = close)) + geom_line() + 
+    ggtitle("Market Close Price of AT&T Over the Years") + xlab("Time") + 
+    ylab("Close Price($)") + 
+    geom_point(aes(x = tprices[date == "2013-01-02", "date"], 
+                   y = tprices[date == "2013-01-02", "close"]), color = "red") + 
+    geom_point(aes(x = tprices[date == "2014-01-02", "date"], 
+                   y = tprices[date == "2014-01-02", "close"]), color = "red") + 
+    geom_point(aes(x = tprices[date == "2015-01-02", "date"], 
+                   y = tprices[date == "2015-01-02", "close"]), color = "red") + 
+    geom_point(aes(x = tprices[date == "2016-01-04", "date"], 
+                   y = tprices[date == "2016-01-04", "close"]), color = "red") +
+  
+
+ggplot(data = tprices, 
+       aes(x = year, y = volume, group = year, fill = year)) + geom_boxplot() +
+        ggtitle("Volume of Trades of AT&T Throughout the Years")
+
+# Capital surplus, or share premium, most commonly refers to the surplus 
+# resulting after common stock is sold for more than its par value.
+
+ggplot(data = tprices, aes(x = year, y = Capital.Surplus)) + geom_point() +
+  labs(x = "Year", y = "Capital Surplus", 
+         title = "Capital Surplus of AT&T Over the Years")
+
+# The debts and obligations of a company or an individual. Current liabilities 
+# are debts due and payable within one year. Long-term liabilities are those 
+# payable after one year.
+
+ggplot(data = tprices, aes(x = year, y = Liabilities)) + geom_point() +
+  labs(x = "Year", 
+         title = "Liabilities of AT&T Over the Years")
+
+# Gross margin is a company's net sales revenue minus its cost of goods sold 
+# (COGS). ... The higher the gross margin, the more capital a company retains 
+# on each dollar of sales, which it can then use to pay other costs or satisfy 
+# debt obligations.
+
+ggplot(data = tprices, aes(x = year, y = Gross.Margin)) + geom_point() +
+  labs(x = "Year", y = "Gross Margin", 
+         title = "Gross Margin of AT&T Over the Years")
+
+```
+
