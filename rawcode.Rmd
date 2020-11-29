@@ -1,0 +1,230 @@
+---
+title: "RawCode"
+output: pdf_document
+---
+
+
+```{r, echo = FALSE}
+library(lubridate)
+library(tidyverse)
+library(faraway)
+library(caret)
+library(reshape2)
+```
+
+
+```{r, echo = FALSE}
+# securities is the dataset containing sector information 
+securities = read.csv("securities.csv")
+
+# fund contains yearly fundamental information about each company 
+fund = read.csv("fundamentals.csv")
+
+# psa contains adjusted prices of daily stock prices
+psa = read.csv("prices-split-adjusted.csv")
+
+# adjusted prices for company AT&T
+
+tprices = psa[psa$symbol == "T",]
+
+# reset indexes
+row.names(tprices) = NULL
+```
+
+
+```{r,echo = FALSE}
+# change date to datetime object
+tprices$date = ymd(tprices$date)
+
+# placeholder for column names in for loop
+fundminus = select(fund,-c("X","Ticker.Symbol","Period.Ending","For.Year"))
+
+
+# separate fund data corresponding to tprices only
+ex = fund[fund$Ticker.Symbol == "T",]
+
+# adding last years yearly info into present year
+tprices$year = year(tprices$date)-1
+tprices = tprices[tprices$year %in% unique(ex$For.Year),]
+
+# for loops to add all columns of fund into tprices
+
+for(j in unique(ex$For.Year)){
+  for(k in names(fundminus)){
+    tprices[tprices$year == j, k] = ex[ex$For.Year == j, k]
+  }
+}
+
+
+tprices = select(tprices, c("close","volume","date", "year",
+                            "Capital.Surplus","Gross.Margin","Liabilities"))
+
+tprices$year = year(tprices$date)
+
+```
+
+
+
+```{r,echo = FALSE, results = 'hide'}
+# adding a data point at the end 
+added_obs = data.frame("2017-01-01", 30, 98323500, 9.1038e+10, 57, 1798000000)
+names(added_obs) = c("date", "close", "volume", "Capital.Surplus", 
+                     "Gross.Margin", "Liabilities")
+added_obs$date = ymd(added_obs$date)
+added_obs$year = year(added_obs$date)
+
+row.names(tprices) = NULL
+# the last row is the added observation
+tprices = rbind(tprices, added_obs)
+
+mdl = lm(close ~ volume + Capital.Surplus + Gross.Margin + Liabilities ,
+         tprices)
+
+summary(mdl)
+
+```
+
+
+```{r,echo = FALSE}
+ggplot(data = tprices , aes(x = date, y = close)) + geom_line() + 
+    ggtitle("Market Close Price of AT&T Over the Years") + xlab("Time") + 
+    ylab("Close Price($)") + 
+    geom_point(aes(x = tprices[date == "2013-01-02", "date"], 
+                   y = tprices[date == "2013-01-02", "close"]), color = "red") + 
+    geom_point(aes(x = tprices[date == "2014-01-02", "date"], 
+                   y = tprices[date == "2014-01-02", "close"]), color = "red") + 
+    geom_point(aes(x = tprices[date == "2015-01-02", "date"], 
+                   y = tprices[date == "2015-01-02", "close"]), color = "red") + 
+    geom_point(aes(x = tprices[date == "2016-01-04", "date"], 
+                   y = tprices[date == "2016-01-04", "close"]), color = "red") 
+
+summary(tprices$close)
+
+head(sort(tprices$close, decreasing = FALSE))
+  
+
+ggplot(data = tprices, 
+       aes(x = year, y = volume, group = year, fill = year)) + geom_boxplot() +
+        ggtitle("Volume of Trades of AT&T Throughout the Years")
+
+summary(tprices[tprices$year == 2013,"volume"])
+summary(tprices[tprices$year == 2014,"volume"])
+summary(tprices[tprices$year == 2015,"volume"])
+summary(tprices[tprices$year == 2016,"volume"])
+
+# Capital surplus, or share premium, most commonly refers to the surplus 
+# resulting after common stock is sold for more than its par value.
+
+ggplot(data = tprices, aes(x = year, y = Capital.Surplus)) + geom_point() +
+  labs(x = "Year", y = "Capital Surplus", 
+         title = "Capital Surplus of AT&T Over the Years")
+
+# The debts and obligations of a company or an individual. Current liabilities 
+# are debts due and payable within one year. Long-term liabilities are those 
+# payable after one year.
+
+ggplot(data = tprices, aes(x = year, y = Liabilities)) + geom_point() +
+  labs(x = "Year", 
+         title = "Liabilities of AT&T Over the Years")
+
+# Gross margin is a company's net sales revenue minus its cost of goods sold 
+# (COGS). ... The higher the gross margin, the more capital a company retains 
+# on each dollar of sales, which it can then use to pay other costs or satisfy 
+# debt obligations.
+
+ggplot(data = tprices, aes(x = year, y = Gross.Margin)) + geom_point() +
+  labs(x = "Year", y = "Gross Margin", 
+         title = "Gross Margin of AT&T Over the Years")
+
+pairs(tprices)
+
+# adapted from http://www.sthda.com/english/wiki/ggplot2-quick-correlation-
+# matrix-heatmap-r-software-and-data-visualization
+
+# gathered the columns we needed and made data frame into a matrix
+
+tmat = as.matrix(select(tprices,-c("date","year")))
+
+# get the correlation between the columns
+tcor = round(cor(tmat),2)
+
+# function to just get the upper triangle of values for heatmap
+get_upper_tri <- function(cormat){
+    cormat[lower.tri(cormat)]<- NA
+    return(cormat)
+}
+
+# reorder the correlation matrix based on its correlation
+
+reorder_cormat <- function(cormat){
+# Use correlation between variables as distance
+dd <- as.dist((1-cormat)/2)
+hc <- hclust(dd)
+cormat <-cormat[hc$order, hc$order]
+}
+
+tcor = reorder_cormat(tcor)
+
+upper_tri = get_upper_tri(tcor)
+
+# melt for plottable data
+
+melted = melt(upper_tri,na.rm = TRUE)
+
+# produces heat map
+
+heatmap = ggplot(data = melted, aes(Var2, Var1, fill = value))+
+ geom_tile(color = "white")+
+ scale_fill_gradient2(low = "blue", high = "red", mid = "white", 
+   midpoint = 0, limit = c(-1,1), space = "Lab", 
+   name="Pearson\nCorrelation") +
+  theme_minimal()+ 
+ theme(axis.text.x = element_text(angle = 45, vjust = 1, 
+    size = 12, hjust = 1))+
+ coord_fixed() + geom_text(aes(Var2, Var1, label = value), color = "black", 
+                           size = 4) +
+theme(
+  axis.title.x = element_blank(),
+  axis.title.y = element_blank(),
+  panel.grid.major = element_blank(),
+  panel.border = element_blank(),
+  panel.background = element_blank(),
+  axis.ticks = element_blank(),
+  legend.justification = c(1, 0),
+  legend.position = c(0.5, 0.7),
+  legend.direction = "horizontal")+
+  guides(fill = guide_colorbar(barwidth = 7, barheight = 1,
+                title.position = "top", title.hjust = 0.5)) + 
+  ggtitle("Heatmap of Correlation Between Regressors")
+
+print(heatmap)
+
+```
+
+
+```{r,echo = FALSE}
+# Model Adequacy 
+
+par(mfrow=c(2,2))
+plot(mdl, which = 1)
+plot(mdl, which = 2)
+plot(mdl, which = 3)
+plot(mdl, which = 5)
+```
+
+```{r, echo = FALSE}
+# leverage point if hii > 2p/n
+
+influ = influence(mdl) # measures leverage points
+head(sort(influ$hat, decreasing = TRUE))
+
+# influential point if Di > 1
+
+cooks = cooks.distance(mdl) # measures influential points
+# head(sort(cooks,decreasing = TRUE))
+
+# decreasing leverage points
+sort(influ$hat[influ$hat>(2*4)/nrow(tprices)],decreasing = TRUE) 
+
+which(cooks > 1) # no influential points
+```
