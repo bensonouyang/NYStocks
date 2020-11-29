@@ -1,9 +1,53 @@
 ---
-title: "Multiple Linear Regression on AT&T Stock"
+title: "**Analysis to Predict Closing Stock Prices from Company AT&T**"
+author: 
+- Victor Yung
+- Benson Ou-yang
+- Ivan Cao
+abstract:
+  In our project, our goal was to develop a suitable prediction model by 
+  assessing the closing stock prices of the company AT&T using linear 
+  regression analysis. To determine the regressors we used stepwise 
+  analysis, which discovered various sets of variables that resulted 
+  in having a significant relationship to the closing price of AT&T stocks 
+  which includes volume, capital surplus, gross margin, and liabilities. 
+  By fitting each regressor into the model, we were able to produce a model 
+  that explained roughly 66.4% of variability of predicting the closing price. 
+  Furthermore, we used visual graphs such as normal q-q plots and Residual 
+  plots to help identify any underlying issues with patterns or outliers we 
+  came across in our model. The overall analysis of our model helped us subset 
+  and distinguish the effectiveness of each regressor we found to our response 
+  variable.
+
 output: pdf_document
+bookdown::html_document2: default
+bookdown::pdf_document2: default
 ---
 
-```{r}
+# Introduction
+
+The telecommunication space is an inevitably growing industry dependent on the 
+advancement of technology. Therefore, there will be stock investment 
+opportunities for consumers to take part in as we notice that the amount of 
+potential this industry presents, however it is not risk free.  In our analysis,
+we designate our efforts toward one of the most well-known telecommunication 
+companies around the world, AT&T. Our question of interest is to predict the 
+closing stock price of the years 2012 to 2016 for AT&T.
+ In order to tackle this problem, we first collected and constructed the data 
+ set with categories related to closing stock prices and tested to see if 
+ there is a strong significance to those specific years. We then performed a 
+ stepwise procedure to ensure the categories we chose had a strong significance 
+ to the closing price. Therefore, we introduced those variables as the regressor
+ we will use for our final model for prediction. The variables include volume 
+ measuring the number of shares traded during a specific time, capital surplus
+ which is the excess remaining after common stock sold,  gross margin as the 
+ percentage of the difference between revenue and cost of goods sold divided 
+ by revenue, and lastly liabilities being how much a company owes.  The model 
+ will be further dissected through visual plots that will explain the different 
+ patterns and possible outliers that may affect the results of our final model.
+
+
+```{r, echo = FALSE,message= FALSE}
 library(lubridate)
 library(tidyverse)
 library(faraway)
@@ -12,7 +56,7 @@ library(reshape2)
 ```
 
 
-```{r}
+```{r, echo = FALSE}
 # securities is the dataset containing sector information 
 securities = read.csv("securities.csv")
 
@@ -31,7 +75,7 @@ row.names(tprices) = NULL
 ```
 
 
-```{r}
+```{r,echo = FALSE}
 # change date to datetime object
 tprices$date = ymd(tprices$date)
 
@@ -64,7 +108,7 @@ tprices$year = year(tprices$date)
 
 
 
-```{r}
+```{r,echo = FALSE}
 # adding a data point at the end 
 added_obs = data.frame("2017-01-01", 30, 98323500, 9.1038e+10, 57, 1798000000)
 names(added_obs) = c("date", "close", "volume", "Capital.Surplus", 
@@ -76,15 +120,76 @@ row.names(tprices) = NULL
 # the last row is the added observation
 tprices = rbind(tprices, added_obs)
 
-mdl = lm(close ~ volume + Capital.Surplus + Gross.Margin + Liabilities ,
-         tprices)
-
-summary(mdl)
 
 ```
 
+# Data Description
 
-```{r}
+We are using three datasets: securities.csv, fundamentals.csv, and 
+prices-split-adjusted.csv.
+
+\verb|Securities.csv| contains information on the stock companies such as the 
+company's name and ticker symbol, the type of sector they are in, location of 
+headquarters and others. 
+
+\verb|Fundamentals.csv| contains information of yearly reports of fundamental 
+information of each company such as \verb|total revenue, accounts payable, 
+liabilities and many more.|
+
+\verb|Prices-split-adjusted.csv| contains information of the stocks adjusted 
+prices after splitting. The columns included are the \verb|date, ticker symbol, 
+close, open, low, high|,and \verb|volume.|
+
+
+```{r, echo = FALSE}
+mdl = lm(close ~ volume + Capital.Surplus + Gross.Margin + Liabilities ,
+         tprices)
+```
+
+
+For our linear regression model, we have selected to predict close prices of 
+AT&T’s stock. Our regressor variables are volume from the 
+\verb|prices-split-adjusted.csv| and \verb|capital surplus|, \verb|gross margin|
+, and \verb|liabilities| from the \verb|fundamentals.csv.| 
+
+\begin{align*}
+  close = \beta_0 + \beta_1(volume) + \beta_2(Capital Surplus) + 
+  \beta_3(Gross Margin) + \beta_4(Liabilities) + \epsilon
+\end{align*}
+
+
+Since the data from \verb|fundamentals.csv| is yearly, we applied the previous 
+year data into the next year since the yearly reports are at the end of the year 
+so we use that information for the next year. For example, the \verb|total 
+revenue| for 2013 is $1,000,000 so we made a column for total revenue and made 
+every row that is in 2014 to be $1,000,000. We ran a nested for loop to apply 
+this for all years and columns. \verb|Tprices| is the dataset with the columns 
+of interest for our linear model. 
+
+```{r, echo = FALSE}
+knitr::kable(tprices[1:5,1:7], format="markdown")
+```
+
+
+Close corresponds to the price of the stock when the market closes.
+
+Volume is the number of trades that occurred that day.
+
+Date is the date of the trading day.
+
+Year is the year of the trading day.
+
+Capital Surplus or share premium, most commonly refers to the surplus resulting 
+after common stock is sold for more than its par value.
+
+Gross Margin is a company's net sales revenue minus its cost of goods sold. The 
+higher the gross margin, the more capital a company retains on each dollar of 
+sales, which it can then use to pay other costs or satisfy debt obligations.
+
+Liabilities are the debts and obligations of a company.
+
+
+```{r c-plot,echo = FALSE,fig.height=4,fig.cap="Close Price of ATNT 2013-2016"}
 ggplot(data = tprices , aes(x = date, y = close)) + geom_line() + 
     ggtitle("Market Close Price of AT&T Over the Years") + xlab("Time") + 
     ylab("Close Price($)") + 
@@ -95,20 +200,71 @@ ggplot(data = tprices , aes(x = date, y = close)) + geom_line() +
     geom_point(aes(x = tprices[date == "2015-01-02", "date"], 
                    y = tprices[date == "2015-01-02", "close"]), color = "red") + 
     geom_point(aes(x = tprices[date == "2016-01-04", "date"], 
-                   y = tprices[date == "2016-01-04", "close"]), color = "red") 
-  
+                   y = tprices[date == "2016-01-04", "close"]), color = "red")
+```
 
+
+Figure \@ref(fig:c-plot) represents the market closing price of the stock for 
+AT&T over the years. The red points on the line is just the indicator of the 
+beginning of the year. Over the years, the closing price is around $35 starting 
+the year in 2013 and 2014. Around spring of 2013, the stock shot up to about $39
+which is the highest closing price until 2016. The stock drops to about $32 in 
+the beginning of the year and before 2015. In 2016, the stock was starting to 
+rise and in mid 2016, the stock got a new record of about $43.
+
+```{r, echo = FALSE}
+knitr::kable(summary(tprices$close), format="markdown")
+```
+
+```{r,echo = FALSE, results='hide'}
+head(sort(tprices$close, decreasing = FALSE))
+```
+
+In the five number summary of the close prices, the minimum is $30 but that is 
+the one data point that we have added. So without that data point, the lowest is
+\$31.80. The max close price is \$43.47. The mean close price is \$35.77 since
+the mean wouldn't change that much from one data point that is \$30.
+
+
+```{r, echo = FALSE}
 ggplot(data = tprices, 
        aes(x = year, y = volume, group = year, fill = year)) + geom_boxplot() +
         ggtitle("Volume of Trades of AT&T Throughout the Years")
 
+```
+
+This boxplot shows the volume traded of each year. The mean volume traded is 
+about the same for every year except for 2015. The dots of the boxplot represent
+the outliers of each year. There are days where the stock is traded more often 
+that usual such as when the stock is low, more people are buying and when the 
+stock is high, more are selling. The max volume traded was in 2016, we can 
+assume a lot of people were selling when AT&T stock was at its highest in this 
+data.
+
+```{r,echo = FALSE}
+print("Summary of Volume in 2013")
+summary(tprices[tprices$year == 2013,"volume"])
+print("Summary of Volume in 2014")
+summary(tprices[tprices$year == 2014,"volume"])
+print("Summary of Volume in 2015")
+summary(tprices[tprices$year == 2015,"volume"])
+print("Summary of Volume in 2016")
+summary(tprices[tprices$year == 2016,"volume"])
+```
+
+```{r,echo = FALSE}
 # Capital surplus, or share premium, most commonly refers to the surplus 
 # resulting after common stock is sold for more than its par value.
 
 ggplot(data = tprices, aes(x = year, y = Capital.Surplus)) + geom_point() +
   labs(x = "Year", y = "Capital Surplus", 
          title = "Capital Surplus of AT&T Over the Years")
+```
 
+This plot shows the capital surplus of each year. It was rising up until 2016 
+where it dropped by a lot.
+
+```{r, echo = FALSE}
 # The debts and obligations of a company or an individual. Current liabilities 
 # are debts due and payable within one year. Long-term liabilities are those 
 # payable after one year.
@@ -116,7 +272,13 @@ ggplot(data = tprices, aes(x = year, y = Capital.Surplus)) + geom_point() +
 ggplot(data = tprices, aes(x = year, y = Liabilities)) + geom_point() +
   labs(x = "Year", 
          title = "Liabilities of AT&T Over the Years")
+```
 
+This plot shows the liabilities of each year. In 2013 and 2015, AT&T had the 
+highest liabilities. In 2014, they had the lowest. In 2016, it was between the 
+highest and lowest liabilities.
+
+```{r, echo = FALSE}
 # Gross margin is a company's net sales revenue minus its cost of goods sold 
 # (COGS). ... The higher the gross margin, the more capital a company retains 
 # on each dollar of sales, which it can then use to pay other costs or satisfy 
@@ -125,9 +287,21 @@ ggplot(data = tprices, aes(x = year, y = Liabilities)) + geom_point() +
 ggplot(data = tprices, aes(x = year, y = Gross.Margin)) + geom_point() +
   labs(x = "Year", y = "Gross Margin", 
          title = "Gross Margin of AT&T Over the Years")
+```
 
+This plot shows the gross margin of each year. From 2013 to 2014, it rose up to 
+the highest of 60. In 2015 it fell down to 55 and 2016 dropped to 54.
+
+```{r, echo = FALSE}
 pairs(tprices)
+```
 
+This pairs plot shows the columns plotted against each other. Since the columns 
+from the fundamentals.csv is yearly data, when plotted against other columns, 
+they are shown as separate lines due to the values being the same daily for the 
+year.
+
+```{r,echo = FALSE}
 # adapted from http://www.sthda.com/english/wiki/ggplot2-quick-correlation-
 # matrix-heatmap-r-software-and-data-visualization
 
@@ -191,8 +365,79 @@ print(heatmap)
 
 ```
 
+The heatmap shows the correlation between each column.
 
-```{r}
+# Methods
+
+## Datasets
+
+To begin, we chose to combine two of the four datasets offered, 
+“Price-split-adjusted” (PSA) and “Fundamentals” (Fund). The PSA dataset accounts
+for all stocks traded in the NYSE daily from 2010-2016 and the Fund dataset 
+accounts for the 10-K filing from 2012-2016, an annual comprehensive report 
+required by the U.S. Securities and Exchanges Commission (SEC). Since the dates
+in the datasets varies from daily in PSA and annually in Fund, we attach the 
+previous year’s filing of the 10-K report to help predict the next year over.
+
+## Subsetting Dataset
+
+With many predictors in our dataset, we used stepwise regression to identify 
+which predictors deemed significant and insignificant, with the insignificant 
+predictors being removed from the model. Since our datasets covers different 
+years, we kept only the years that overlap in both datasets, 2013-2016. 
+Lastly, we removed all companies other than our company of focus, AT&T. 
+Figure 4.1 presents data for subsetted data. 
+
+```{r, echo = FALSE}
+knitr::kable(tprices[1:5,1:7], format="markdown")
+```
+
+
+
+```{r,echo = FALSE,fig.cap='Markdownvellous!'}
+# Model Adequacy 
+
+par(mfrow=c(2,2))
+plot(mdl, which = 1)
+plot(mdl, which = 2)
+plot(mdl, which = 3)
+plot(mdl, which = 5)
+```
+
+```{r, echo = FALSE, results = 'hide'}
+# leverage point if hii > 2p/n
+
+influ = influence(mdl) # measures leverage points
+head(sort(influ$hat, decreasing = TRUE))
+
+# influential point if Di > 1
+
+cooks = cooks.distance(mdl) # measures influential points
+# head(sort(cooks,decreasing = TRUE))
+
+# decreasing leverage points
+sort(influ$hat[influ$hat>(2*4)/nrow(tprices)],decreasing = TRUE) 
+
+which(cooks > 1) # no influential points
+```
+## Model Selecting
+
+After establishing a model with stepwise selection, we also tried a handful of 
+transformations to try to improve the accuracy of our model. Using 
+transformations on the response variables did little to improve our model 
+(Figure 4.2) whereas transformations performed on the regressor variables 
+worsened our model (Figure 4.3). In the end, we stuck to our original model, 
+keeping close as our response variables, and volume, capital surplus, 
+gross margin, and liabilities as our predictors (Figure 4.3). 
+
+
+```{r, echo = FALSE}
+
+```
+
+
+
+```{r, echo = FALSE, results='hide'}
 # Cross Validation
 
 set.seed(75392)
@@ -214,7 +459,8 @@ summary(train.lm)
 
 preds <- predict(train.lm,test_data)
 
-plot(test_data$close,preds)
+plot(test_data$close,preds, xlab = "Actual Close Price", 
+     ylab = "Predicted Close Price", main = "Actual vs Predicted Close Price")
 abline(c(0,1))
 
 R.sq = R2(preds, test_data$close)
@@ -223,8 +469,10 @@ MAPE = MAE(preds, test_data$close)
 NSE=1-RMSPE^2/var(test_data$close)
 print(c(R.sq,RMSPE,MAPE,NSE))
 
-plot(test_data$date, test_data$close, type = 'l')
-points(test_data$date, preds, col = "red")
-
+plot(test_data$date, test_data$close, type = 'l', 
+     main = "AT&T Close Price Over Time", ylab = "Close Price" ,xlab = "Time")
+lines(test_data$date, preds, col = "red")
+legend(x = "bottomright",legend = c("Actual","Predicted"),pch = "___", 
+       col = c("black","red"))
 ```
 
