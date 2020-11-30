@@ -4,6 +4,7 @@ author:
 - Victor Yung
 - Benson Ou-yang
 - Ivan Cao
+
 abstract:
   In our project, our goal was to develop a suitable prediction model by 
   assessing the closing stock prices of the company AT&T using linear 
@@ -19,10 +20,26 @@ abstract:
   and distinguish the effectiveness of each regressor we found to our response 
   variable.
 
-output: pdf_document
-bookdown::html_document2: default
-bookdown::pdf_document2: default
+output: 
+  bookdown::pdf_document2:
+    extra_dependencies: "subfig"
+    fig_caption: yes
+    includes: 
+      in_header: my_header.tex
 ---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+```{r global-options, include=FALSE}
+knitr::opts_chunk$set(fig.height=3.5, fig.path='Figs/', fig.pos = "H",
+                      echo=FALSE, warning=FALSE, message=FALSE)
+```
+
+```{r package-options, include=FALSE}
+knitr::opts_knit$set(progress = TRUE, verbose = TRUE)
+```
 
 # Introduction
 
@@ -53,6 +70,7 @@ library(tidyverse)
 library(faraway)
 library(caret)
 library(reshape2)
+library(car)
 ```
 
 
@@ -125,20 +143,21 @@ tprices = rbind(tprices, added_obs)
 
 # Data Description
 
-We are using three datasets: securities.csv, fundamentals.csv, and 
-prices-split-adjusted.csv.
+We are using three datasets: \verb|securities.csv|, \verb|fundamentals.csv|, and 
+\verb|prices-split-adjusted.csv|.
 
 \verb|Securities.csv| contains information on the stock companies such as the 
 company's name and ticker symbol, the type of sector they are in, location of 
 headquarters and others. 
 
 \verb|Fundamentals.csv| contains information of yearly reports of fundamental 
-information of each company such as \verb|total revenue, accounts payable, 
-liabilities and many more.|
+information of each company such as \verb|total| \verb|revenue|, \verb|accounts| 
+\verb|payable|, \verb|liabilities| and many more.
 
 \verb|Prices-split-adjusted.csv| contains information of the stocks adjusted 
-prices after splitting. The columns included are the \verb|date, ticker symbol, 
-close, open, low, high|,and \verb|volume.|
+prices after splitting. The columns included are the \verb|date|, \verb|ticker| 
+\verb|symbol|, \verb|close|, \verb|open|, \verb|low|, \verb|high|,and 
+\verb|volume|.
 
 
 ```{r, echo = FALSE}
@@ -150,46 +169,50 @@ mdl = lm(close ~ volume + Capital.Surplus + Gross.Margin + Liabilities ,
 For our linear regression model, we have selected to predict close prices of 
 AT&T’s stock. Our regressor variables are volume from the 
 \verb|prices-split-adjusted.csv| and \verb|capital surplus|, \verb|gross margin|
-, and \verb|liabilities| from the \verb|fundamentals.csv.| 
+, and \verb|liabilities| from the \verb|fundamentals.csv|. See Equation 
+\@ref(eq:mlr) 
 
-\begin{align*}
+\begin{equation}
   close = \beta_0 + \beta_1(volume) + \beta_2(Capital Surplus) + 
-  \beta_3(Gross Margin) + \beta_4(Liabilities) + \epsilon
-\end{align*}
+  \beta_3(Gross Margin) + \beta_4(Liabilities) + \epsilon (\#eq:mlr)
+\end{equation}
 
 
 Since the data from \verb|fundamentals.csv| is yearly, we applied the previous 
 year data into the next year since the yearly reports are at the end of the year 
-so we use that information for the next year. For example, the \verb|total 
-revenue| for 2013 is $1,000,000 so we made a column for total revenue and made 
-every row that is in 2014 to be $1,000,000. We ran a nested for loop to apply 
-this for all years and columns. \verb|Tprices| is the dataset with the columns 
-of interest for our linear model. 
+so we use that information for the next year. For example, if the \verb|total| 
+\verb|revenue| for 2013 is $1,000,000 so we made a column for total revenue and 
+made every row that is in 2014 to be $1,000,000. We ran a nested for loop to 
+apply this for all years and columns. \verb|Tprices| is the DataFrame with the 
+columns of interest for our linear model. See Table \@ref(tab:names-tab).
 
-```{r, echo = FALSE}
-knitr::kable(tprices[1:5,1:7], format="markdown")
+```{r names-tab}
+
+knitr::kable(names(tprices), format = "markdown", 
+             caption = "Names of DataFrame Tprices", col.names = "Columns")
 ```
 
 
-Close corresponds to the price of the stock when the market closes.
+\verb|Close| corresponds to the price of the stock when the market closes.
 
-Volume is the number of trades that occurred that day.
+\verb|Volume| is the number of trades that occurred that day.
 
-Date is the date of the trading day.
+\verb|Date| is the date of the trading day.
 
-Year is the year of the trading day.
+\verb|Year| is the year of the trading day.
 
-Capital Surplus or share premium, most commonly refers to the surplus resulting 
-after common stock is sold for more than its par value.
+\verb|Capital.surplus| or share premium, most commonly refers to the surplus 
+resulting after common stock is sold for more than its par value.
 
-Gross Margin is a company's net sales revenue minus its cost of goods sold. The 
-higher the gross margin, the more capital a company retains on each dollar of 
-sales, which it can then use to pay other costs or satisfy debt obligations.
+\verb|Gross.margin| is a company's net sales revenue minus its cost of goods 
+sold. The higher the gross margin, the more capital a company retains on each 
+dollar of sales, which it can then use to pay other costs or satisfy debt 
+obligations.
 
-Liabilities are the debts and obligations of a company.
+\verb|Liabilities| are the debts and obligations of a company.
 
 
-```{r c-plot,echo = FALSE,fig.height=4,fig.cap="Close Price of ATNT 2013-2016"}
+```{r c-plot,fig.cap="Daily Market Close Price of AT&T"}
 ggplot(data = tprices , aes(x = date, y = close)) + geom_line() + 
     ggtitle("Market Close Price of AT&T Over the Years") + xlab("Time") + 
     ylab("Close Price($)") + 
@@ -213,7 +236,7 @@ the beginning of the year and before 2015. In 2016, the stock was starting to
 rise and in mid 2016, the stock got a new record of about $43.
 
 ```{r, echo = FALSE}
-knitr::kable(summary(tprices$close), format="markdown")
+summary(tprices$close)
 ```
 
 ```{r,echo = FALSE, results='hide'}
@@ -226,20 +249,20 @@ the one data point that we have added. So without that data point, the lowest is
 the mean wouldn't change that much from one data point that is \$30.
 
 
-```{r, echo = FALSE}
+```{r v-plot, fig.cap="Daily Volume Traded of ATNT"}
 ggplot(data = tprices, 
        aes(x = year, y = volume, group = year, fill = year)) + geom_boxplot() +
         ggtitle("Volume of Trades of AT&T Throughout the Years")
 
 ```
 
-This boxplot shows the volume traded of each year. The mean volume traded is 
-about the same for every year except for 2015. The dots of the boxplot represent
-the outliers of each year. There are days where the stock is traded more often 
-that usual such as when the stock is low, more people are buying and when the 
-stock is high, more are selling. The max volume traded was in 2016, we can 
-assume a lot of people were selling when AT&T stock was at its highest in this 
-data.
+Figure \@ref(fig:v-plot) shows the volume traded of each year. The mean volume 
+traded is about the same for every year except for 2015. The dots of the boxplot
+represent the outliers of each year. There are days where the stock is traded 
+more often that usual such as when the stock is low, more people are buying and 
+when the stock is high, more are selling. The max volume traded was in 2016, we 
+can assume a lot of people were selling when AT&T stock was at its highest in 
+this data.
 
 ```{r,echo = FALSE}
 print("Summary of Volume in 2013")
@@ -252,7 +275,7 @@ print("Summary of Volume in 2016")
 summary(tprices[tprices$year == 2016,"volume"])
 ```
 
-```{r,echo = FALSE}
+```{r cs-plot,fig.cap="Capital Surplus of ATNT 2013-2016"}
 # Capital surplus, or share premium, most commonly refers to the surplus 
 # resulting after common stock is sold for more than its par value.
 
@@ -261,10 +284,10 @@ ggplot(data = tprices, aes(x = year, y = Capital.Surplus)) + geom_point() +
          title = "Capital Surplus of AT&T Over the Years")
 ```
 
-This plot shows the capital surplus of each year. It was rising up until 2016 
-where it dropped by a lot.
+Figure \@ref(fig:cs-plot) shows the capital surplus of each year. It was rising 
+up until 2016 where it dropped by a lot.
 
-```{r, echo = FALSE}
+```{r l-plot, fig.cap="Liabilities of ATNT 2013-2016"}
 # The debts and obligations of a company or an individual. Current liabilities 
 # are debts due and payable within one year. Long-term liabilities are those 
 # payable after one year.
@@ -274,11 +297,11 @@ ggplot(data = tprices, aes(x = year, y = Liabilities)) + geom_point() +
          title = "Liabilities of AT&T Over the Years")
 ```
 
-This plot shows the liabilities of each year. In 2013 and 2015, AT&T had the 
-highest liabilities. In 2014, they had the lowest. In 2016, it was between the 
-highest and lowest liabilities.
+Figure \@ref(fig:l-plot) shows the liabilities of each year. In 2013 and 2015, 
+AT&T had the highest liabilities. In 2014, they had the lowest. In 2016, it was 
+between the highest and lowest liabilities.
 
-```{r, echo = FALSE}
+```{r gm-plot, fig.cap="Gross Margin of ATNT 2013-2016"}
 # Gross margin is a company's net sales revenue minus its cost of goods sold 
 # (COGS). ... The higher the gross margin, the more capital a company retains 
 # on each dollar of sales, which it can then use to pay other costs or satisfy 
@@ -289,19 +312,20 @@ ggplot(data = tprices, aes(x = year, y = Gross.Margin)) + geom_point() +
          title = "Gross Margin of AT&T Over the Years")
 ```
 
-This plot shows the gross margin of each year. From 2013 to 2014, it rose up to 
-the highest of 60. In 2015 it fell down to 55 and 2016 dropped to 54.
+Figure \@ref(fig:gm-plot) shows the gross margin of each year. From 2013 to 
+2014, it rose up to the highest of 60. In 2015 it fell down to 55 and 2016 
+dropped to 54.
 
-```{r, echo = FALSE}
+```{r pp-plot, fig.cap = "Pairs Plot of Columns of Tprices",fig.height=3.25}
 pairs(tprices)
 ```
 
-This pairs plot shows the columns plotted against each other. Since the columns 
-from the fundamentals.csv is yearly data, when plotted against other columns, 
-they are shown as separate lines due to the values being the same daily for the 
-year.
+Figure \@ref(fig:pp-plot) shows the columns plotted against each other. Since 
+the columns from the fundamentals.csv is yearly data, when plotted against other
+columns, they are shown as separate lines due to the values being the same daily 
+for the year.
 
-```{r,echo = FALSE}
+```{r h-map,fig.cap = "Correlation Between Variables", fig.width = 8, fig.height = 5}
 # adapted from http://www.sthda.com/english/wiki/ggplot2-quick-correlation-
 # matrix-heatmap-r-software-and-data-visualization
 
@@ -365,7 +389,7 @@ print(heatmap)
 
 ```
 
-The heatmap shows the correlation between each column.
+Figure \@ref(fig:h-map) shows the correlation between each column.
 
 # Methods
 
@@ -381,65 +405,155 @@ previous year’s filing of the 10-K report to help predict the next year over.
 
 ## Subsetting Dataset
 
-With many predictors in our dataset, we used stepwise regression to identify 
-which predictors deemed significant and insignificant, with the insignificant 
-predictors being removed from the model. Since our datasets covers different 
-years, we kept only the years that overlap in both datasets, 2013-2016. 
-Lastly, we removed all companies other than our company of focus, AT&T. 
-Figure 4.1 presents data for subsetted data. 
+Since our datasets covers different years, we kept only the years that overlap 
+in both datasets, 2013-2016. Lastly, we removed all companies other than our 
+company of focus, AT&T. With 76 columns in \verb|fundamentals.csv| that were 
+added into \verb|tprices| DataFrame, we ran into issues with fitting the model 
+with all the columns. The error that came up was due to singularities with the
+columns. The singularities are due to the fact that many of the variables are
+dependent of each other.The model would fit up to four variables and the other 
+coefficients would be NA. Due to this, we handpicked the variables 
+\verb|Capital.Surplus|, \verb|Liabilities|, and \verb|Gross.Margins|. We
+subsetted the DataFrame to just include \verb|close|, \verb|volume|, \verb|date|,
+\verb|year|, \verb|year|, \verb|Capital.Surplus|, \verb|Gross.Margin|, and
+\verb|Liabilities|. Table \@ref(tab:t-tab) presents the subsetted data. 
 
-```{r, echo = FALSE}
-knitr::kable(tprices[1:5,1:7], format="markdown")
+```{r t-tab}
+knitr::kable(tprices[1:5,1:7], format="markdown", 
+             caption = "First five rows of tprices DataFrame")
 ```
 
+## Model Adequacy
+
+Checking model adequacy is an important step to measure the accuracy of the model. 
+The Residuals vs. Fitted values in Figure \@ref(fig:ma-plot)(a) shows whether the 
+residuals have a relationship with each other. Ideally, the points would be 
+randomly scattered about zero with no patterns. In our plot, the spaces in 
+between the four groups represent the four different years ranging from 
+2013-2016. When observing the residuals vs fitted, it seems as though the points
+are scattered randomly about zero, starting with a negative relationship into a 
+more stable relationship as the plot moves from left to right. We also see that 
+the scatter on the far right Is more spread out which could point out to 
+potential problems down the line.
 
 
-```{r,echo = FALSE,fig.cap='Markdownvellous!'}
+The normal Q-Q plot in Figure \@ref(fig:ma-plot)(b) shows whether the errors are 
+normally distributed. If the errors were normally distributed, points would be 
+rested on the line with minimum gaps between the line and the points. Our plot 
+shows that the ends of the plot has a noticeable gap between the line and the 
+points and there are more points near the middle of the points that lies almost 
+directly on the line. Our Q-Q plot seems to be light tailed but nonetheless the 
+plot is about normal. Our plot points out point 761 and 763 as potential 
+outliers.
+
+
+```{r ma-plot, fig.cap='Model Adequacy Plots', fig.subcap=c('Residuals vs Fitted Plot','Normal QQ Plot','Scale-Location Plot','Residuals vs Leverage'),fig.height = 3.5, fig.ncol = 2,out.width = "50%"}
+
 # Model Adequacy 
-
-par(mfrow=c(2,2))
 plot(mdl, which = 1)
 plot(mdl, which = 2)
 plot(mdl, which = 3)
 plot(mdl, which = 5)
 ```
 
-```{r, echo = FALSE, results = 'hide'}
+
+The scale-location plot in Figure \@ref(fig:ma-plot)(c) shows whether the 
+residuals are spread equally among the predictors and whether the assumption 
+of constant variance is met. Ideally, the plot show has points scattered equally
+horizontally. In our plot, we see that there are four groups of points, the 
+first three groups (from left to right) seem to follow constant variance but the
+points in the rightmost group have a wider spread compared to the previous 
+three. The residuals in the plot do not meet constant variance assumption. 
+Our plot points out point 761 and 763 as potential outliers.
+
+
+The residuals vs leverage plot in Figure \@ref(fig:ma-plot)(d) points out the 
+influential observations within our dataset. The dotted line represents the 
+cook’s distance and any points that fall outside of the dotted red line 
+signifies a highly influential point to the regression results. If we were to 
+exclude these observations, our regression will change and improve. In our case,
+no points fall outside of the cook’s distance, this may be due to the large 
+number of observations included in the data. The plot did highlight point 65, 
+396, and 1009 (our added point) as potential outliers.
+
+
+```{r av-plot, fig.cap = "Added Variable Plot of Model"}
+avPlots(mdl)
+```
+
+The Added Variable Plots in Figure \@ref(fig:av-plot) shows the linear
+relationship between the regressors and response variable. For the regressors
+\verb|Capital.Surplus|, \verb|Gross.Margin|, and \verb|Liabilities|, there are
+chunks of points because this is due to these columns having one value daily of
+that year thus affecting these plots.
+
+We also investigated the leverage and influential points. A leverage point is
+when $h_{ii}$ > $2p/n$, where \verb|p| is the number of predictors and \verb|n|
+is the number of rows of the dataset. $h_{ii}$ comes from the diagonal elements 
+of the hat matrix(\@ref(eq:hat)):
+
+\begin{equation}
+  \boldsymbol{H} = \boldsymbol{X} (\boldsymbol{X}'\boldsymbol{X})^{-1}  
+  \boldsymbol{X} (\#eq:hat)
+\end{equation}
+
+The high leverage points are sorted here.
+
+```{r lev-tab}
 # leverage point if hii > 2p/n
 
 influ = influence(mdl) # measures leverage points
-head(sort(influ$hat, decreasing = TRUE))
+# head(sort(influ$hat, decreasing = TRUE))
 
+# decreasing leverage points
+sort(influ$hat[influ$hat>(2*4)/nrow(tprices)],decreasing = TRUE)
+
+```
+
+
+
+```{r}
 # influential point if Di > 1
 
 cooks = cooks.distance(mdl) # measures influential points
 # head(sort(cooks,decreasing = TRUE))
-
-# decreasing leverage points
-sort(influ$hat[influ$hat>(2*4)/nrow(tprices)],decreasing = TRUE) 
-
-which(cooks > 1) # no influential points
-```
-## Model Selecting
-
-After establishing a model with stepwise selection, we also tried a handful of 
-transformations to try to improve the accuracy of our model. Using 
-transformations on the response variables did little to improve our model 
-(Figure 4.2) whereas transformations performed on the regressor variables 
-worsened our model (Figure 4.3). In the end, we stuck to our original model, 
-keeping close as our response variables, and volume, capital surplus, 
-gross margin, and liabilities as our predictors (Figure 4.3). 
-
-
-```{r, echo = FALSE}
-
+# which(cooks > 1) # no influential points
 ```
 
 
+```{r}
+# remove leverage points and assess
+```
 
-```{r, echo = FALSE, results='hide'}
-# Cross Validation
 
+Here we checked the Variance Inflation Factor(\verb|VIF|),
+
+```{r}
+vif(mdl)
+```
+
+The \verb|VIF| for \verb|Capital.Surplus|, \verb|Gross.Margin|, and 
+\verb|Liabilities| were pretty high but they are less than 10 so 
+multicollinearity is not an issue.
+
+## Model Selection
+
+By doing stepwise selection with our model, we found that we already have the 
+best model and don't need to remove any variables. See Equation \@ref(eq:mlr) 
+above.
+
+```{r}
+step(mdl)
+```
+
+## Model Validation
+
+After assessing the model adequacy, we go on to validate our model to see if it 
+can function properly and successfully for the intended user. To do this, 
+we sampled 80% of the AT&T data to form the training dataset, leaving 20% to 
+be the testing set. The model and results will be shown in the following section.
+
+```{r}
 set.seed(75392)
 
 df = tprices
@@ -455,24 +569,102 @@ test_data <-   df[-training_samps, ]
 train.lm <- lm(close ~ volume + Capital.Surplus + Gross.Margin + Liabilities, 
                data = df)
 
-summary(train.lm)
-
 preds <- predict(train.lm,test_data)
+```
 
+
+# Result
+
+This is the summary of fitting a model on the training data.
+
+```{r}
+summary(train.lm)
+```
+
+
+```{r pred-p, fig.cap = "Predicted Values Plotted with Actual Values With y=x Line"}
 plot(test_data$close,preds, xlab = "Actual Close Price", 
      ylab = "Predicted Close Price", main = "Actual vs Predicted Close Price")
 abline(c(0,1))
+```
 
+Figure \@ref(fig:pred-p) shows the relationship between predicted close price 
+(y-axis) versus actual close price (x-axis). We notice that the fitted line 
+provides a positive slope across the plot indicating that there is a positive 
+linear relationship between the predicted and actual close price. In addition, 
+the points are roughly evenly scattered around the fitted line which is a sign 
+of constant variance in the graph however, because there is variation around the
+fitted line it means that our plot does not perfectly predict the closing 
+prices. We observed the two points on the top left of the graph which is an 
+indication of potential outliers however, a rule of thumb if we get rid of those
+two points it will not make a significant difference in the overall pattern of 
+the plot therefore they can be left alone.
+
+
+
+```{r}
 R.sq = R2(preds, test_data$close)
 RMSPE = RMSE(preds, test_data$close)
 MAPE = MAE(preds, test_data$close)
 NSE=1-RMSPE^2/var(test_data$close)
 print(c(R.sq,RMSPE,MAPE,NSE))
+```
 
+
+
+```{r test-plot, fig.cap="Time Series Plot of Actual Close Price and Predicted Close Price"}
 plot(test_data$date, test_data$close, type = 'l', 
      main = "AT&T Close Price Over Time", ylab = "Close Price" ,xlab = "Time")
 lines(test_data$date, preds, col = "red")
 legend(x = "bottomright",legend = c("Actual","Predicted"),pch = "___", 
        col = c("black","red"))
 ```
+
+Figure \@ref(fig:test-plot) shows the overall pattern of close prices of AT&T 
+stocks over years 2013 to 2017. This plot is a great tool that allows us to 
+compare visually the difference between the predicted closing prices labelled 
+in red versus the actual closing prices labelled in black. We see that our 
+predicted prices are generally more stable than the actual prices meaning that 
+there are some variations between what we predicted versus what the actual price
+of the closing stock is at a certain point in time. From the results we see our
+prediction is not 100% accurate but it does show that it is not completely off 
+as it provides similar patterns to the actual closing price. Furthermore, we 
+also notice that large shifts in patterns particularly from 2016 to 2017 where 
+closing price has been the highest which is an indication that the value of the 
+company has grown.
+
+# Conclusion
+
+
+
+# Appendix
+
+## URL: 
+[Repository containing all files](https://github.com/bensonouyang/NYStocks)  
+
+## Data Files: 
+[fundamentals.csv](https://github.com/bensonouyang/NYStocks/blob/main/fundamentals.csv)  
+[prices-split-adjusted.csv](https://github.com/bensonouyang/NYStocks/blob/main/prices-split-adjusted.csv)  
+[securities.csv](https://github.com/bensonouyang/NYStocks/blob/main/securities.csv)  
+
+## Raw Code:
+[rawcode.Rmd](https://github.com/bensonouyang/NYStocks/blob/main/rawcode.Rmd)  
+
+## Report:
+[at&t.Rmd](https://github.com/bensonouyang/NYStocks/blob/main/at%26t.Rmd)  
+[at-t.pdf](https://github.com/bensonouyang/NYStocks/blob/main/at-t.pdf)  
+
+## Text Files:
+[README.md](https://github.com/bensonouyang/NYStocks/blob/main/README.md)  
+[my_header.tex](https://github.com/bensonouyang/NYStocks/blob/main/my_header.tex)  
+
+## Required Libraries:
+
+\verb|lubridate|  
+\verb|tidyverse|  
+\verb|faraway|  
+\verb|caret|  
+\verb|reshape2|  
+\verb|car|  
+\verb|knitr|  
 
