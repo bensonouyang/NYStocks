@@ -10,15 +10,17 @@
 * [Technologies](#technologies)
 * [Setup](#setup)
 * [Features](#features)
-* [Code Example](#code example)
+* [Example](#example)
 
 ## Technologies
 Project is created with:
-* R
+* R/R Markdown
 * Latex
 
 ## Setup
 To run this project:
-* Download the files [here]{https://github.com/bensonouyang/NYStocks}
+* Download the files [here](https://github.com/bensonouyang/NYStocks)
  
+## Features
 
+## Example
