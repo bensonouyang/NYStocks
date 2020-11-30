@@ -523,8 +523,41 @@ cooks = cooks.distance(mdl) # measures influential points
 
 ```{r}
 # remove leverage points and assess
+rowindex = names(influ$hat[influ$hat>(2*4)/nrow(tprices)])
+df = tprices
+
+# for loop to make id column to reference row
+for(i in 1:nrow(tprices)){
+  df[i,"id"] = i
+}
+
+newdata = df[!(df$id %in% c(rowindex)),]
+newdata = select(newdata,-"id")
+
+no_lev_mdl = lm(close~volume + Capital.Surplus + Gross.Margin + Liabilities ,
+         newdata)
 ```
 
+```{r nolev-plot, fig.cap='Model Adequacy Plots', fig.subcap=c('Residuals vs Fitted Plot','Normal QQ Plot','Scale-Location Plot','Residuals vs Leverage'),fig.height = 3.5, fig.ncol = 2,out.width = "50%"}
+
+# Model Adequacy 
+plot(no_lev_mdl, which = 1)
+plot(no_lev_mdl, which = 2)
+plot(no_lev_mdl, which = 3)
+plot(no_lev_mdl, which = 5)
+```
+
+By removing the leverage points, the model adequacy plots in Figure 
+\@ref(fig:nolev-plot) seem almost identical. There seems to be less clustering 
+of points without the leverage points and for the residuals vs leverage plot
+in Figure \@ref(fig:nolev-plot)(d) looks better as you can see the data points
+more clearer on the left side.
+
+```{r}
+summary(no_lev_mdl)
+```
+
+By removing the leverage points, the $R^2$ improves from 0.6638 to 0.6832.
 
 Here we checked the Variance Inflation Factor(\verb|VIF|),
 
@@ -543,7 +576,7 @@ best model and don't need to remove any variables. See Equation \@ref(eq:mlr)
 above.
 
 ```{r}
-step(mdl)
+step(no_lev_mdl)
 ```
 
 ## Model Validation
@@ -556,7 +589,7 @@ be the testing set. The model and results will be shown in the following section
 ```{r}
 set.seed(75392)
 
-df = tprices
+df = newdata
 
 nsamp=ceiling(0.8*length(df$close))
 training_samps=sample(c(1:length(df$close)),
@@ -588,6 +621,7 @@ plot(test_data$close,preds, xlab = "Actual Close Price",
 abline(c(0,1))
 ```
 
+
 Figure \@ref(fig:pred-p) shows the relationship between predicted close price 
 (y-axis) versus actual close price (x-axis). We notice that the fitted line 
 provides a positive slope across the plot indicating that there is a positive 
@@ -600,17 +634,65 @@ indication of potential outliers however, a rule of thumb if we get rid of those
 two points it will not make a significant difference in the overall pattern of 
 the plot therefore they can be left alone.
 
-
-
-```{r}
+```{r info-tab}
 R.sq = R2(preds, test_data$close)
 RMSPE = RMSE(preds, test_data$close)
 MAPE = MAE(preds, test_data$close)
-NSE=1-RMSPE^2/var(test_data$close)
-print(c(R.sq,RMSPE,MAPE,NSE))
-```
+NSE=RMSPE/sd(test_data$close)
+# print(c(R.sq,RMSPE,MAPE,NSE))
 
+info = data.frame("R2" = R.sq, "RMSPE" = RMSPE, "MAPE" = MAPE, "NSE" = NSE)
 
+knitr::kable(info, format = "markdown", 
+             caption = "Table containing $R^{2}_{Prediction}$, Root Mean Square 
+             Prediction Error, Mean Absolute Prediction Error, 
+             Normalized Standard Error")
+```  
+
+In Table \@ref(tab:info-tab), we generated the $R^{2}_{Prediction}$, Root Mean
+Square Prediction Error, Mean Absolute Prediction Error and Normalized Standard
+Error. The $R^{2}_{Prediction}$ is like doing a regression with the independent
+variable as the predicted values and the dependent variable is the testing 
+values. It tells us how well our regression model makes predictions. Our model
+doesn't predict poorly but also doesn't predict that well. 
+  
+  
+The Root Mean Square Prediction Error (Equation \@ref(eq:RMSPE)) is the standard 
+deviation of the residuals. It is a measure of how far the data points deviate 
+from the regression line.
+  
+  
+\begin{equation}
+  \boldsymbol{RMSPE} = \sqrt{\frac{1}{\boldsymbol{n}}\sum_{i=1}^{n}
+  (\boldsymbol{y_i} - \boldsymbol{\hat{y_i}})^2}
+  (\#eq:RMSPE)
+\end{equation}
+  
+  
+The Mean Absolute Prediction Value measures the average magnitude of the data 
+points that deviate from the fitted line. See Equation \@ref(eq:MAPE).
+  
+  
+\begin{equation}
+  \boldsymbol{MAPE} = \frac{1}{\boldsymbol{n}}\sum_{i=1}^{n}
+  |\boldsymbol{y_i} - \boldsymbol{\hat{y_i}}|
+  (\#eq:MAPE)
+\end{equation}
+  
+  
+The Normalized Standard Error(Equation \@ref(eq:NSE)) is the normalized Root Mean
+Square Prediction Error. Normalizing it tells us if the Root Mean Square 
+Prediction Error value is a low value or not. It tells us how much variability 
+we have explained. For example, a value of 1 says the model explains none of the 
+variability. 
+  
+  
+\begin{equation}
+  \boldsymbol{NSE} = \frac{\boldsymbol{RMSPE}}{\boldsymbol{\sigma_{test}}}
+  (\#eq:NSE)
+\end{equation}
+  
+  
 
 ```{r test-plot, fig.cap="Time Series Plot of Actual Close Price and Predicted Close Price"}
 plot(test_data$date, test_data$close, type = 'l', 
@@ -651,8 +733,8 @@ company has grown.
 [rawcode.Rmd](https://github.com/bensonouyang/NYStocks/blob/main/rawcode.Rmd)  
 
 ## Report:
-[at&t.Rmd](https://github.com/bensonouyang/NYStocks/blob/main/at%26t.Rmd)  
-[at-t.pdf](https://github.com/bensonouyang/NYStocks/blob/main/at-t.pdf)  
+[atntReport.Rmd](https://github.com/bensonouyang/NYStocks/blob/main/at%26t.Rmd)  
+[atntReport.pdf](https://github.com/bensonouyang/NYStocks/blob/main/at-t.pdf)  
 
 ## Text Files:
 [README.md](https://github.com/bensonouyang/NYStocks/blob/main/README.md)  
@@ -666,5 +748,6 @@ company has grown.
 \verb|caret|  
 \verb|reshape2|  
 \verb|car|  
-\verb|knitr|  
+\verb|knitr|
+\verb|bookdown|
 

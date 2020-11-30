@@ -4,16 +4,17 @@ output: pdf_document
 ---
 
 
-```{r, echo = FALSE}
+```{r,message= FALSE}
 library(lubridate)
 library(tidyverse)
 library(faraway)
 library(caret)
 library(reshape2)
+library(car)
 ```
 
 
-```{r, echo = FALSE}
+```{r}
 # securities is the dataset containing sector information 
 securities = read.csv("securities.csv")
 
@@ -32,7 +33,7 @@ row.names(tprices) = NULL
 ```
 
 
-```{r,echo = FALSE}
+```{r}
 # change date to datetime object
 tprices$date = ymd(tprices$date)
 
@@ -65,7 +66,7 @@ tprices$year = year(tprices$date)
 
 
 
-```{r,echo = FALSE, results = 'hide'}
+```{r,echo = FALSE}
 # adding a data point at the end 
 added_obs = data.frame("2017-01-01", 30, 98323500, 9.1038e+10, 57, 1798000000)
 names(added_obs) = c("date", "close", "volume", "Capital.Surplus", 
@@ -77,15 +78,27 @@ row.names(tprices) = NULL
 # the last row is the added observation
 tprices = rbind(tprices, added_obs)
 
-mdl = lm(close ~ volume + Capital.Surplus + Gross.Margin + Liabilities ,
-         tprices)
-
-summary(mdl)
 
 ```
 
+# Data Description
 
-```{r,echo = FALSE}
+
+```{r}
+mdl = lm(close ~ volume + Capital.Surplus + Gross.Margin + Liabilities ,
+         tprices)
+```
+
+
+```{r}
+
+knitr::kable(names(tprices), format = "markdown", 
+             caption = "Names of DataFrame Tprices", col.names = "Columns")
+```
+
+
+
+```{r}
 ggplot(data = tprices , aes(x = date, y = close)) + geom_line() + 
     ggtitle("Market Close Price of AT&T Over the Years") + xlab("Time") + 
     ylab("Close Price($)") + 
@@ -96,29 +109,54 @@ ggplot(data = tprices , aes(x = date, y = close)) + geom_line() +
     geom_point(aes(x = tprices[date == "2015-01-02", "date"], 
                    y = tprices[date == "2015-01-02", "close"]), color = "red") + 
     geom_point(aes(x = tprices[date == "2016-01-04", "date"], 
-                   y = tprices[date == "2016-01-04", "close"]), color = "red") 
+                   y = tprices[date == "2016-01-04", "close"]), color = "red")
+```
 
+
+
+```{r, echo = FALSE}
 summary(tprices$close)
+```
 
+```{r}
 head(sort(tprices$close, decreasing = FALSE))
-  
+```
 
+
+
+
+```{r}
 ggplot(data = tprices, 
        aes(x = year, y = volume, group = year, fill = year)) + geom_boxplot() +
         ggtitle("Volume of Trades of AT&T Throughout the Years")
 
-summary(tprices[tprices$year == 2013,"volume"])
-summary(tprices[tprices$year == 2014,"volume"])
-summary(tprices[tprices$year == 2015,"volume"])
-summary(tprices[tprices$year == 2016,"volume"])
+```
 
+
+
+```{r,echo = FALSE}
+print("Summary of Volume in 2013")
+summary(tprices[tprices$year == 2013,"volume"])
+print("Summary of Volume in 2014")
+summary(tprices[tprices$year == 2014,"volume"])
+print("Summary of Volume in 2015")
+summary(tprices[tprices$year == 2015,"volume"])
+print("Summary of Volume in 2016")
+summary(tprices[tprices$year == 2016,"volume"])
+```
+
+```{r}
 # Capital surplus, or share premium, most commonly refers to the surplus 
 # resulting after common stock is sold for more than its par value.
 
 ggplot(data = tprices, aes(x = year, y = Capital.Surplus)) + geom_point() +
   labs(x = "Year", y = "Capital Surplus", 
          title = "Capital Surplus of AT&T Over the Years")
+```
 
+
+
+```{r}
 # The debts and obligations of a company or an individual. Current liabilities 
 # are debts due and payable within one year. Long-term liabilities are those 
 # payable after one year.
@@ -126,7 +164,11 @@ ggplot(data = tprices, aes(x = year, y = Capital.Surplus)) + geom_point() +
 ggplot(data = tprices, aes(x = year, y = Liabilities)) + geom_point() +
   labs(x = "Year", 
          title = "Liabilities of AT&T Over the Years")
+```
 
+
+
+```{r}
 # Gross margin is a company's net sales revenue minus its cost of goods sold 
 # (COGS). ... The higher the gross margin, the more capital a company retains 
 # on each dollar of sales, which it can then use to pay other costs or satisfy 
@@ -135,9 +177,17 @@ ggplot(data = tprices, aes(x = year, y = Liabilities)) + geom_point() +
 ggplot(data = tprices, aes(x = year, y = Gross.Margin)) + geom_point() +
   labs(x = "Year", y = "Gross Margin", 
          title = "Gross Margin of AT&T Over the Years")
+```
 
+
+
+```{r}
 pairs(tprices)
+```
 
+
+
+```{r}
 # adapted from http://www.sthda.com/english/wiki/ggplot2-quick-correlation-
 # matrix-heatmap-r-software-and-data-visualization
 
@@ -202,29 +252,158 @@ print(heatmap)
 ```
 
 
-```{r,echo = FALSE}
-# Model Adequacy 
+# Methods
 
-par(mfrow=c(2,2))
+## Datasets
+
+
+## Subsetting Dataset
+
+
+```{r}
+knitr::kable(tprices[1:5,1:7], format="markdown", 
+             caption = "First five rows of tprices DataFrame")
+```
+
+## Model Adequacy
+
+
+
+```{r}
+
+# Model Adequacy 
 plot(mdl, which = 1)
 plot(mdl, which = 2)
 plot(mdl, which = 3)
 plot(mdl, which = 5)
 ```
 
-```{r, echo = FALSE}
+
+
+
+```{r}
+avPlots(mdl)
+```
+
+
+
+```{r}
 # leverage point if hii > 2p/n
 
 influ = influence(mdl) # measures leverage points
-head(sort(influ$hat, decreasing = TRUE))
+# head(sort(influ$hat, decreasing = TRUE))
 
+# decreasing leverage points
+sort(influ$hat[influ$hat>(2*4)/nrow(tprices)],decreasing = TRUE)
+
+```
+
+
+
+```{r}
 # influential point if Di > 1
 
 cooks = cooks.distance(mdl) # measures influential points
 # head(sort(cooks,decreasing = TRUE))
+# which(cooks > 1) # no influential points
+```
 
-# decreasing leverage points
-sort(influ$hat[influ$hat>(2*4)/nrow(tprices)],decreasing = TRUE) 
 
-which(cooks > 1) # no influential points
+```{r}
+# remove leverage points and assess
+rowindex = names(influ$hat[influ$hat>(2*4)/nrow(tprices)])
+df = tprices
+
+# for loop to make id column to reference row
+for(i in 1:nrow(tprices)){
+  df[i,"id"] = i
+}
+
+newdata = df[!(df$id %in% c(rowindex)),]
+newdata = select(newdata,-"id")
+
+no_lev_mdl = lm(close~volume + Capital.Surplus + Gross.Margin + Liabilities ,
+         newdata)
+```
+
+```{r}
+# Model Adequacy 
+plot(no_lev_mdl, which = 1)
+plot(no_lev_mdl, which = 2)
+plot(no_lev_mdl, which = 3)
+plot(no_lev_mdl, which = 5)
+```
+
+
+
+```{r}
+vif(mdl)
+```
+
+
+
+## Model Selection
+
+
+
+```{r}
+step(no_lev_mdl)
+```
+
+## Model Validation
+
+
+
+```{r}
+set.seed(75392)
+
+df = newdata
+
+nsamp=ceiling(0.8*length(df$close))
+training_samps=sample(c(1:length(df$close)),
+                      nsamp)
+training_samps=sort(training_samps)
+train_data  <- df[training_samps, ]
+test_data <-   df[-training_samps, ]
+
+
+train.lm <- lm(close ~ volume + Capital.Surplus + Gross.Margin + Liabilities, 
+               data = df)
+
+preds <- predict(train.lm,test_data)
+```
+
+
+# Result
+
+
+```{r}
+summary(train.lm)
+```
+
+
+```{r}
+plot(test_data$close,preds, xlab = "Actual Close Price", 
+     ylab = "Predicted Close Price", main = "Actual vs Predicted Close Price")
+abline(c(0,1))
+```
+
+
+
+```{r}
+R.sq = R2(preds, test_data$close)
+RMSPE = RMSE(preds, test_data$close)
+MAPE = MAE(preds, test_data$close)
+NSE=RMSPE/sd(test_data$close)
+print(c(R.sq,RMSPE,MAPE,NSE))
+```
+
+
+
+```{r}
+plot(test_data$date, test_data$close, type = 'l', 
+     main = "AT&T Close Price Over Time", ylab = "Close Price" ,xlab = "Time")
+lines(test_data$date, preds, col = "red")
+legend(x = "bottomright",legend = c("Actual","Predicted"),pch = "___", 
+       col = c("black","red"))
 ```
