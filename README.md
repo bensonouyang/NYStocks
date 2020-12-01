@@ -1,7 +1,9 @@
 # Analysis to Predict Close Stock Prices from Company AT&T
 
 ## Authors:
-- Victor Yung - Benson Ou-yang - Ivan Cao
+- Victor Yung 
+- Benson Ou-yang 
+- Ivan Cao
 
 ## Table of Contents
 * [Introduction](#introduction)
@@ -21,11 +23,13 @@ Project is created with:
 ## Setup
 To run this project:
 * Download the files [here](https://github.com/bensonouyang/NYStocks.git) in cmd
-'''sh
+```sh
 git clone https://github.com/bensonouyang/NYStocks.git
-'''
+```
+
 Required Libraries in R:
 * Install the necessary packages
+
   - lubridate
   ```sh
   install.packages("lubridate")
