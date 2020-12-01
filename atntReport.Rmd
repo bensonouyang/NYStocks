@@ -733,8 +733,8 @@ company has grown.
 [rawcode.Rmd](https://github.com/bensonouyang/NYStocks/blob/main/rawcode.Rmd)  
 
 ## Report:
-[atntReport.Rmd](https://github.com/bensonouyang/NYStocks/blob/main/at%26t.Rmd)  
-[atntReport.pdf](https://github.com/bensonouyang/NYStocks/blob/main/at-t.pdf)  
+[atntReport.Rmd](https://github.com/bensonouyang/NYStocks/blob/main/atntReport.Rmd)  
+[atntReport.pdf](https://github.com/bensonouyang/NYStocks/blob/main/atntReport.pdf)  
 
 ## Text Files:
 [README.md](https://github.com/bensonouyang/NYStocks/blob/main/README.md)  
