@@ -27,37 +27,37 @@ git clone https://github.com/bensonouyang/NYStocks.git
 Required Libraries in R:
 * Install the necessary packages
   - lubridate
-  '''sh
+  ```sh
   install.packages("lubridate")
-  '''
+  ```
   - tidyverse
-  '''sh
+  ```sh
   install.packages("tidyverse")
-  '''
+  ```
   - faraway
-  '''sh
+  ```sh
   install.packages("faraway")
-  '''
+  ```
   - caret
-  '''sh
+  ```sh
   install.packages("caret")
-  '''
+  ```
   - reshape2
-  '''sh
+  ```sh
   install.packages("reshape2")
-  '''
+  ```
   - car
-  '''sh
+  ```sh
   install.packages("car")
-  '''
+  ```
   - knitr
-  '''sh
+  ```sh
   install.packages("knitr")
-  '''
+  ```
   - bookdown
-  '''sh
+  ```sh
   install.packages("bookdown")
-  '''
+  ```
 
 ## Usage
 To run the code and see results:
