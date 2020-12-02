@@ -497,7 +497,8 @@ of the hat matrix(\@ref(eq:hat)):
   \boldsymbol{X} (\#eq:hat)
 \end{equation}
 
-The high leverage points are sorted here.
+The high leverage points are sorted here. Data point 1009 is the one data point
+that we added in. Measuring for leverage points caught this point.
 
 ```{r lev-tab}
 # leverage point if hii > 2p/n
@@ -748,6 +749,6 @@ company has grown.
 \verb|caret|  
 \verb|reshape2|  
 \verb|car|  
-\verb|knitr|
+\verb|knitr|  
 \verb|bookdown|
 
