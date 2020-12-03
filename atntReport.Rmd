@@ -6,19 +6,18 @@ author:
 - Ivan Cao
 
 abstract:
-  In our project, our goal was to develop a suitable prediction model by 
-  assessing the closing stock prices of the company AT&T using linear 
-  regression analysis. To determine the regressors we used stepwise 
-  analysis, which discovered various sets of variables that resulted 
-  in having a significant relationship to the closing price of AT&T stocks 
-  which includes volume, capital surplus, gross margin, and liabilities. 
-  By fitting each regressor into the model, we were able to produce a model 
-  that explained roughly 66.4% of variability of predicting the closing price. 
-  Furthermore, we used visual graphs such as normal q-q plots and Residual 
-  plots to help identify any underlying issues with patterns or outliers we 
-  came across in our model. The overall analysis of our model helped us subset 
-  and distinguish the effectiveness of each regressor we found to our response 
-  variable.
+  In our project, we are trying to determine if we are capable of developing a 
+  suitable model using regression analysis that allows for trades in the market 
+  to be fully automated. Mentioned under the data’s context on Kaggle, roughly 
+  30% of the trades are already automated. We gathered the data from the company
+   AT&T from the years 2013-2016 and added in the yearly fundamental data. 
+   Furthermore, we used visual graphs to analyze the residuals to help identify 
+   any underlying problems we came across when developing our model. By 
+   data-splitting, we acquired a model that was capable of predicting the 
+   closing prices roughly 69% of the time. The overall analysis of the model 
+   helped us subset and distinguish the effectiveness of each regressor we 
+   found to the response variable, however we were expecting our model to have 
+   a higher percentage predicting closing stock price of AT&T.  
 
 output: 
   bookdown::pdf_document2:
@@ -43,25 +42,12 @@ knitr::opts_knit$set(progress = TRUE, verbose = TRUE)
 
 # Introduction
 
-The telecommunication space is an inevitably growing industry dependent on the 
-advancement of technology. Therefore, there will be stock investment 
-opportunities for consumers to take part in as we notice that the amount of 
-potential this industry presents, however it is not risk free.  In our analysis,
-we designate our efforts toward one of the most well-known telecommunication 
-companies around the world, AT&T. Our question of interest is to predict the 
-closing stock price of the years 2012 to 2016 for AT&T.
- In order to tackle this problem, we first collected and constructed the data 
- set with categories related to closing stock prices and tested to see if 
- there is a strong significance to those specific years. We then performed a 
- stepwise procedure to ensure the categories we chose had a strong significance 
- to the closing price. Therefore, we introduced those variables as the regressor
- we will use for our final model for prediction. The variables include volume 
- measuring the number of shares traded during a specific time, capital surplus
- which is the excess remaining after common stock sold,  gross margin as the 
- percentage of the difference between revenue and cost of goods sold divided 
- by revenue, and lastly liabilities being how much a company owes.  The model 
- will be further dissected through visual plots that will explain the different 
- patterns and possible outliers that may affect the results of our final model.
+The telecommunication industry is growing inevitably, and it is highly dependent
+on the rapid advancement of technology. The telecommunication industry is a key
+element for businesses and individuals to collaborate from anywhere across the
+world. As a result, there will be investment opportunities present, however it
+is not risk free. In our analysis, we designate our efforts toward one of the
+most well-known telecommunication companies around the world, AT&T. 
 
 
 ```{r, echo = FALSE,message= FALSE}
@@ -168,8 +154,8 @@ mdl = lm(close ~ volume + Capital.Surplus + Gross.Margin + Liabilities ,
 
 For our linear regression model, we have selected to predict close prices of 
 AT&T’s stock. Our regressor variables are volume from the 
-\verb|prices-split-adjusted.csv| and \verb|capital surplus|, \verb|gross margin|
-, and \verb|liabilities| from the \verb|fundamentals.csv|. See Equation 
+\verb|prices-split-adjusted.csv| and \verb|capital surplus|, \verb|gross margin|,
+and \verb|liabilities| from the \verb|fundamentals.csv|. See Equation 
 \@ref(eq:mlr) 
 
 \begin{equation}
@@ -178,22 +164,23 @@ AT&T’s stock. Our regressor variables are volume from the
 \end{equation}
 
 
-Since the data from \verb|fundamentals.csv| is yearly, we applied the previous 
-year data into the next year since the yearly reports are at the end of the year 
-so we use that information for the next year. For example, if the \verb|total| 
-\verb|revenue| for 2013 is $1,000,000 so we made a column for total revenue and 
-made every row that is in 2014 to be $1,000,000. We ran a nested for loop to 
-apply this for all years and columns. \verb|Tprices| is the DataFrame with the 
-columns of interest for our linear model. See Table \@ref(tab:names-tab).
+Since the data from the \verb|fundamentals.csv| is annual, we merged the previous 
+year's dataset with the following year's \verb|prices-split-adjusted.csv| data of 
+AT&T to form the full dataset. For example, if the \verb|total| \verb|revenue| 
+for 2013 is \$1,000,000 so we made a column for total revenue and made every row 
+that is in 2014 to be \$1,000,000. We ran a nested for loop to apply this for all 
+years and columns. \verb|Tprices| is the DataFrame with the columns of interest 
+for our linear model. See Table \@ref(tab:names-tab).
 
 ```{r names-tab}
 
 knitr::kable(names(tprices), format = "markdown", 
-             caption = "Names of DataFrame Tprices", col.names = "Columns")
+             caption = "Column Names of DataFrame Tprices", col.names = "Columns")
 ```
 
 
-\verb|Close| corresponds to the price of the stock when the market closes.
+\verb|Close| corresponds to the price of the stock when the market closes on 
+that day.
 
 \verb|Volume| is the number of trades that occurred that day.
 
@@ -228,12 +215,13 @@ ggplot(data = tprices , aes(x = date, y = close)) + geom_line() +
 
 
 Figure \@ref(fig:c-plot) represents the market closing price of the stock for 
-AT&T over the years. The red points on the line is just the indicator of the 
-beginning of the year. Over the years, the closing price is around $35 starting 
-the year in 2013 and 2014. Around spring of 2013, the stock shot up to about $39
-which is the highest closing price until 2016. The stock drops to about $32 in 
-the beginning of the year and before 2015. In 2016, the stock was starting to 
-rise and in mid 2016, the stock got a new record of about $43.
+AT&T over the span of 2013 to 2017. The red points on the line mark as an 
+indication when the year begins. We notice that 2013 and 2014 closing prices 
+both started around \$35. Around spring of 2013, the stock shot up to about 
+\$39 which is the highest closing price until 2016. The stock drops to about 
+\$32 in the beginning of the year and before 2015. In 2016, the stock was 
+starting to rise and in mid 2016, the stock got a new record of about \$43.
+
 
 ```{r, echo = FALSE}
 summary(tprices$close)
@@ -243,10 +231,9 @@ summary(tprices$close)
 head(sort(tprices$close, decreasing = FALSE))
 ```
 
-In the five number summary of the close prices, the minimum is $30 but that is 
-the one data point that we have added. So without that data point, the lowest is
-\$31.80. The max close price is \$43.47. The mean close price is \$35.77 since
-the mean wouldn't change that much from one data point that is \$30.
+In the five number summary of the close prices, the minimum is our added 
+observation of \$30 . Without the added observation, the lowest is \$31.80. 
+The max close price is \$43.47. The mean close price is \$35.77.
 
 
 ```{r v-plot, fig.cap="Daily Volume Traded of ATNT"}
@@ -256,13 +243,13 @@ ggplot(data = tprices,
 
 ```
 
-Figure \@ref(fig:v-plot) shows the volume traded of each year. The mean volume 
-traded is about the same for every year except for 2015. The dots of the boxplot
-represent the outliers of each year. There are days where the stock is traded 
-more often that usual such as when the stock is low, more people are buying and 
-when the stock is high, more are selling. The max volume traded was in 2016, we 
-can assume a lot of people were selling when AT&T stock was at its highest in 
-this data.
+Figure \@ref(fig:v-plot) shows the volume traded each year. The mean volume 
+traded yearly is roughly the same except for 2015. The dots on the boxplot 
+represent the outliers from that given year. There are days where the stock 
+is traded more often than usual which could be caused by good news, low stock 
+prices, etc. On the other hand, there are also days where volume is lower than 
+usual since the stock price is higher causing people who own the stock to hold 
+or the price being too high that does not incentivize buyers, etc.
 
 ```{r,echo = FALSE}
 print("Summary of Volume in 2013")
@@ -285,7 +272,7 @@ ggplot(data = tprices, aes(x = year, y = Capital.Surplus)) + geom_point() +
 ```
 
 Figure \@ref(fig:cs-plot) shows the capital surplus of each year. It was rising 
-up until 2016 where it dropped by a lot.
+up until 2016 where it dropped by significantly.
 
 ```{r l-plot, fig.cap="Liabilities of ATNT 2013-2016"}
 # The debts and obligations of a company or an individual. Current liabilities 
@@ -403,6 +390,35 @@ required by the U.S. Securities and Exchanges Commission (SEC). Since the dates
 in the datasets varies from daily in PSA and annually in Fund, we attach the 
 previous year’s filing of the 10-K report to help predict the next year over.
 
+## Choosing Regressors
+
+When first developing the model, we included open as one of the predictors for 
+close. As a result, the correlation of our model increased to 99%, this is 
+because if a stock were to open higher than the average, it is most likely 
+going to close higher than the average. Also, if other predictors were to be 
+added with open, the variance inflation factor will be increased to a level 
+where there are clear violations of multicollinearity. In the end, we decided 
+not to include open as part of our model because it is unrealistic to be able 
+to predict the model with 99% accuracy.
+
+```{r}
+ogdf = psa[psa$symbol == "T",]
+
+first_mdl = lm(close~open+low+high+volume, data = ogdf)
+
+summary(first_mdl)
+```
+
+This is the summary of our first model.
+
+```{r}
+vif(first_mdl)
+```
+
+These are the variance inflation factors. \verb|Open|, \verb|low|, and 
+\verb|high| have values vastly greater than 10, thus this model suffers from
+severe multicollinearity.
+
 ## Subsetting Dataset
 
 Since our datasets covers different years, we kept only the years that overlap 
@@ -411,7 +427,7 @@ company of focus, AT&T. With 76 columns in \verb|fundamentals.csv| that were
 added into \verb|tprices| DataFrame, we ran into issues with fitting the model 
 with all the columns. The error that came up was due to singularities with the
 columns. The singularities are due to the fact that many of the variables are
-dependent of each other.The model would fit up to four variables and the other 
+dependent of each other. The model would fit up to four variables and the other 
 coefficients would be NA. Due to this, we handpicked the variables 
 \verb|Capital.Surplus|, \verb|Liabilities|, and \verb|Gross.Margins|. We
 subsetted the DataFrame to just include \verb|close|, \verb|volume|, \verb|date|,
@@ -423,29 +439,8 @@ knitr::kable(tprices[1:5,1:7], format="markdown",
              caption = "First five rows of tprices DataFrame")
 ```
 
+
 ## Model Adequacy
-
-Checking model adequacy is an important step to measure the accuracy of the model. 
-The Residuals vs. Fitted values in Figure \@ref(fig:ma-plot)(a) shows whether the 
-residuals have a relationship with each other. Ideally, the points would be 
-randomly scattered about zero with no patterns. In our plot, the spaces in 
-between the four groups represent the four different years ranging from 
-2013-2016. When observing the residuals vs fitted, it seems as though the points
-are scattered randomly about zero, starting with a negative relationship into a 
-more stable relationship as the plot moves from left to right. We also see that 
-the scatter on the far right Is more spread out which could point out to 
-potential problems down the line.
-
-
-The normal Q-Q plot in Figure \@ref(fig:ma-plot)(b) shows whether the errors are 
-normally distributed. If the errors were normally distributed, points would be 
-rested on the line with minimum gaps between the line and the points. Our plot 
-shows that the ends of the plot has a noticeable gap between the line and the 
-points and there are more points near the middle of the points that lies almost 
-directly on the line. Our Q-Q plot seems to be light tailed but nonetheless the 
-plot is about normal. Our plot points out point 761 and 763 as potential 
-outliers.
-
 
 ```{r ma-plot, fig.cap='Model Adequacy Plots', fig.subcap=c('Residuals vs Fitted Plot','Normal QQ Plot','Scale-Location Plot','Residuals vs Leverage'),fig.height = 3.5, fig.ncol = 2,out.width = "50%"}
 
@@ -456,8 +451,27 @@ plot(mdl, which = 3)
 plot(mdl, which = 5)
 ```
 
+Checking model adequacy is an important step to measure the accuracy of the model. 
+\textbf{The Residuals vs. Fitted values} in Figure \@ref(fig:ma-plot)(a) shows 
+whether the residuals have a relationship with each other. Ideally, the points 
+would be randomly scattered about zero with no patterns. In our plot, the spaces 
+in between the four groups represent the four different years ranging from 
+2013-2016. When observing the residuals vs fitted, it seems as though the points
+are scattered randomly about zero, starting with a negative relationship into a 
+more stable relationship as the plot moves from left to right. We also see that 
+the scatter on the far right is more spread out which could point out to 
+potential problems down the line.
 
-The scale-location plot in Figure \@ref(fig:ma-plot)(c) shows whether the 
+
+The \textbf{normal Q-Q plot} in Figure \@ref(fig:ma-plot)(b) shows whether the 
+errors are normally distributed. If the errors were normally distributed, 
+points are expected to rest on the line with minimum gaps. Our plot has 
+noticeable gaps on both ends labeling point 761 and 763 as potential outliers. 
+The plot seems to be light tailed but nonetheless the plot is about normal due 
+to the amount of observations.
+
+
+The \textbf{scale-location plot} in Figure \@ref(fig:ma-plot)(c) shows whether the 
 residuals are spread equally among the predictors and whether the assumption 
 of constant variance is met. Ideally, the plot show has points scattered equally
 horizontally. In our plot, we see that there are four groups of points, the 
@@ -467,9 +481,9 @@ three. The residuals in the plot do not meet constant variance assumption.
 Our plot points out point 761 and 763 as potential outliers.
 
 
-The residuals vs leverage plot in Figure \@ref(fig:ma-plot)(d) points out the 
-influential observations within our dataset. The dotted line represents the 
-cook’s distance and any points that fall outside of the dotted red line 
+The \textbf{residuals vs leverage plot} in Figure \@ref(fig:ma-plot)(d) points 
+out the influential observations within our dataset. The dotted line represents 
+the cook’s distance and any points that fall outside of the dotted red line 
 signifies a highly influential point to the regression results. If we were to 
 exclude these observations, our regression will change and improve. In our case,
 no points fall outside of the cook’s distance, this may be due to the large 
@@ -481,11 +495,12 @@ number of observations included in the data. The plot did highlight point 65,
 avPlots(mdl)
 ```
 
-The Added Variable Plots in Figure \@ref(fig:av-plot) shows the linear
-relationship between the regressors and response variable. For the regressors
-\verb|Capital.Surplus|, \verb|Gross.Margin|, and \verb|Liabilities|, there are
-chunks of points because this is due to these columns having one value daily of
-that year thus affecting these plots.
+The Added Variable Plots in Figure \@ref(fig:av-plot) aim to compare each 
+regressor against the response variable while controlling the presence of the 
+other regressors. Since the variables in the fundamental dataset are presented 
+annually and are merged with daily data, the variable-plot consists of grouping 
+points. 
+
 
 We also investigated the leverage and influential points. A leverage point is
 when $h_{ii}$ > $2p/n$, where \verb|p| is the number of predictors and \verb|n|
@@ -549,10 +564,10 @@ plot(no_lev_mdl, which = 5)
 ```
 
 By removing the leverage points, the model adequacy plots in Figure 
-\@ref(fig:nolev-plot) seem almost identical. There seems to be less clustering 
-of points without the leverage points and for the residuals vs leverage plot
-in Figure \@ref(fig:nolev-plot)(d) looks better as you can see the data points
-more clearer on the left side.
+\@ref(fig:nolev-plot) improve as the grouping of the points are less evident 
+in all plots. There seems to be less clustering of points without the leverage 
+points and for the residuals vs leverage plot in Figure \@ref(fig:nolev-plot)(d), 
+the data points looks more spread out.
 
 ```{r}
 summary(no_lev_mdl)
@@ -567,14 +582,14 @@ vif(mdl)
 ```
 
 The \verb|VIF| for \verb|Capital.Surplus|, \verb|Gross.Margin|, and 
-\verb|Liabilities| were pretty high but they are less than 10 so 
-multicollinearity is not an issue.
+\verb|Liabilities| are pretty high but they are less than 10 so 
+they are acceptable.
 
 ## Model Selection
 
-By doing stepwise selection with our model, we found that we already have the 
-best model and don't need to remove any variables. See Equation \@ref(eq:mlr) 
-above.
+By performing stepwise selection with our model, we discovered that our current 
+model is the best for predicting closing stock price for AT&T therefore no 
+variables need to be removed. See Equation \@ref(eq:mlr) above.
 
 ```{r}
 step(no_lev_mdl)
@@ -601,7 +616,7 @@ test_data <-   df[-training_samps, ]
 
 
 train.lm <- lm(close ~ volume + Capital.Surplus + Gross.Margin + Liabilities, 
-               data = df)
+               data = train_data)
 
 preds <- predict(train.lm,test_data)
 ```
@@ -615,6 +630,16 @@ This is the summary of fitting a model on the training data.
 summary(train.lm)
 ```
 
+This is the summary of the full model without the leverage points.
+
+```{r}
+summary(no_lev_mdl)
+```
+
+When comparing the coefficients and p values from the two models, the 
+coefficients remain similar and the regressors that were previously found to be 
+significant are still significant.
+
 
 ```{r pred-p, fig.cap = "Predicted Values Plotted with Actual Values With y=x Line"}
 plot(test_data$close,preds, xlab = "Actual Close Price", 
@@ -622,18 +647,17 @@ plot(test_data$close,preds, xlab = "Actual Close Price",
 abline(c(0,1))
 ```
 
-
 Figure \@ref(fig:pred-p) shows the relationship between predicted close price 
 (y-axis) versus actual close price (x-axis). We notice that the fitted line 
 provides a positive slope across the plot indicating that there is a positive 
 linear relationship between the predicted and actual close price. In addition, 
-the points are roughly evenly scattered around the fitted line which is a sign 
-of constant variance in the graph however, because there is variation around the
-fitted line it means that our plot does not perfectly predict the closing 
-prices. We observed the two points on the top left of the graph which is an 
-indication of potential outliers however, a rule of thumb if we get rid of those
-two points it will not make a significant difference in the overall pattern of 
-the plot therefore they can be left alone.
+the points are evenly scattered around the fitted line which is a sign of 
+constant variance. However, the points do not rest directly on the line which 
+means that our model is not capable of perfectly predicting closing price. 
+Although the two points on the top left of the plot could be potential outliers, 
+removing them will not make a significant difference in the overall pattern so 
+we can leave it as is.
+
 
 ```{r info-tab}
 R.sq = R2(preds, test_data$close)
@@ -652,11 +676,12 @@ knitr::kable(info, format = "markdown",
 
 In Table \@ref(tab:info-tab), we generated the $R^{2}_{Prediction}$, Root Mean
 Square Prediction Error, Mean Absolute Prediction Error and Normalized Standard
-Error. The $R^{2}_{Prediction}$ is like doing a regression with the independent
-variable as the predicted values and the dependent variable is the testing 
-values. It tells us how well our regression model makes predictions. Our model
-doesn't predict poorly but also doesn't predict that well. 
-  
+Error. After sampling 80% of the data, $R^{2}_{Prediction}$ uses the same 
+regressors as the original model but uses the sampled data (train dataset) 
+instead of the full data. By calling the summary using the predicted linear 
+model, we can observe the correlation between regressors and response of the 
+train dataset. The sampled data is capable of predicting the remaining 20% of 
+the data 69% of the time.
   
 The Root Mean Square Prediction Error (Equation \@ref(eq:RMSPE)) is the standard 
 deviation of the residuals. It is a measure of how far the data points deviate 
@@ -704,19 +729,57 @@ legend(x = "bottomright",legend = c("Actual","Predicted"),pch = "___",
 ```
 
 Figure \@ref(fig:test-plot) shows the overall pattern of close prices of AT&T 
-stocks over years 2013 to 2017. This plot is a great tool that allows us to 
-compare visually the difference between the predicted closing prices labelled 
-in red versus the actual closing prices labelled in black. We see that our 
-predicted prices are generally more stable than the actual prices meaning that 
-there are some variations between what we predicted versus what the actual price
-of the closing stock is at a certain point in time. From the results we see our
-prediction is not 100% accurate but it does show that it is not completely off 
-as it provides similar patterns to the actual closing price. Furthermore, we 
-also notice that large shifts in patterns particularly from 2016 to 2017 where 
-closing price has been the highest which is an indication that the value of the 
-company has grown.
+stocks over years 2013 to 2016 with the one data point that we added for 2017. 
+This plot gives a visual representation of the difference between the predicted 
+closing price (labelled in red) versus the actual closing price (labelled in 
+black).We see that our predicted prices are generally more stable than the 
+actual prices meaning that there are some variations between what we predicted 
+versus what the actual price of the closing stock is at a certain point in time. 
+From the results we see our prediction is not 100% accurate but it does show that 
+it is not completely off as it provides similar patterns to the actual closing 
+price which the 0.69 from the R^2 prediction explains.Furthermore, we also 
+notice a large shift in the pattern from the beginning to the end of 2016 where 
+the closing price has been the highest since recent years. This is an indication 
+that the value of the company has grown.
+
 
 # Conclusion
+
+In conclusion, our prediction model used 80% of the training data to predict the
+testing data with 69% accuracy. Although this is not perfect, the 69% accuracy 
+is tolerable considering that we only have 4 predictors to the model. 
+
+Some of the limitations of the data presented in this case includes not being 
+able to use the data prior to 2013 because the fundamental dataset lacked the 
+years 2010-2012, not having more information on day to day stock activities that
+can help better predict how volatile the stocks are, and how well the company’s 
+did in the earnings report.
+
+Listed below are some of the examples of better predictors of stock price 
+excluding the ones already included in the dataset.
+
+\begin{enumerate}
+  \item	\verb|Price| \verb|to| \verb|Earnings| \verb|Ratio| – determines market 
+value of stock compared to the company’s reported earnings.
+  \item	\verb|Market| \verb|Capitalization| – refers to the total value of all the 
+company’s shares in stock. Market capitalization is the total from (number of 
+common shares * stock price).
+  \item	\verb|Earnings| \verb|per| \verb|Share| – how much a company earns per 
+share, higher EPS means stock has higher value than those in the same industry.
+\end{enumerate}
+
+By having quarterly information on the earnings reports of AT&T, the user of the
+dataset would have been able to better predict how the stock would react in the 
+following days after the earnings report is released. For context, if AT&T’s 
+earning report were to beat the expectations, the stock would perform better on 
+the following days. In conjunction with adding extra predictors listed above, 
+the predictive power of the model would most likely increase.
+
+Although the dataset on Kaggle highlights that roughly 30% of daily trades are 
+performed by machine, the results of and the limitations of our study points 
+towards the complexity of the stock market that must be considered to make an 
+accurate forecast model. 
+
 
 
 
