@@ -80,8 +80,8 @@ To see the report:
 </p>
 
 <p align="center">
-  <a href="https://raw.githubusercontent.com/bensonouyang/NYStocks/main/Figs/unnamed-chunk-20-2.png">
-    <img src="Figs/unnamed-chunk-20-2.png">
+  <a href="https://raw.githubusercontent.com/bensonouyang/NYStocks/main/Figs/pred-plot.png">
+    <img src="Figs/pred-plot.png">
   </a>
 </p>
 
