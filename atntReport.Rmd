@@ -390,6 +390,14 @@ required by the U.S. Securities and Exchanges Commission (SEC). Since the dates
 in the datasets varies from daily in PSA and annually in Fund, we attach the 
 previous year’s filing of the 10-K report to help predict the next year over.
 
+Observation 1009 dated for Jan 01, 2017 is the added observation. We added this 
+observation to see the effects it would have on our regression model. The 
+observation should be recognized as an outlier which will be later classified 
+as a high leverage point and removed. Observation 1009 has a significant 
+decrease in stock price and increase in volume. A realistic example would be 
+bad news being released on the company such as missing expectations in the 
+earnings report which triggers a sell off and for the stock price to drop.
+
 ## Choosing Regressors
 
 When first developing the model, we included open as one of the predictors for 
