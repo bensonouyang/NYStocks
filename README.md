@@ -1,9 +1,15 @@
-# Analysis to Predict Close Stock Prices from Company AT&T
+# Analysis to Predict Close Stock Prices for Company AT&T
+
+<p align="center">
+  <a href="https://raw.githubusercontent.com/bensonouyang/NYStocks/main/Figs/atntlogo.png">
+    <img src="Figs/atntlogo.png">
+  </a>
+</p>
 
 ## Authors:
-- Victor Yung 
-- Benson Ou-yang 
-- Ivan Cao
+- [Victor Yung](https://github.com/vyung96)
+- [Benson Ou-yang](https://github.com/bensonouyang)
+- [Ivan Cao](https://github.com/ivancao98)
 
 ## Table of Contents
 * [Introduction](#introduction)
@@ -11,9 +17,10 @@
 * [Setup](#setup)
 * [Usage](#usage)
 * [Features](#features)
+* [Source](#source)
 
 ## Introduction
-Multiple linear regression analysis to predict Close stock price of AT&T along with an abstract, introduction, data description, methods, results, conclusion and appendix in a report made in R Markdown with Latex.
+Multiple linear regression analysis using R to predict the market close stock price with volume, capital surplus, gross margin and liabilities of company AT&T. Report with an abstract, introduction, data description, methods, results, conclusion and appendix made in R Markdown using Latex.
 
 ## Technologies
 Project is created with:
@@ -69,7 +76,7 @@ To run the code and see results:
 
 To see the report:
 * Open [atntReport.pdf](https://github.com/bensonouyang/NYStocks/blob/main/atntReport.pdf) for PDF version
-* Open [atntReport.Rmd](https://github.com/bensonouyang/NYStocks/blob/main/atntReport.Rmd) to see code with report
+* Open [atntReport.Rmd](https://github.com/bensonouyang/NYStocks/blob/main/atntReport.Rmd) to see code with the report
  
 ## Features
 
@@ -85,4 +92,5 @@ To see the report:
   </a>
 </p>
 
-
+## Source
+[New York Stock Exchange Kaggle Competition](https://www.kaggle.com/dgawlik/nyse)
