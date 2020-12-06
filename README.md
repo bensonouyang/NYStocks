@@ -1,9 +1,9 @@
 # Analysis to Predict Close Stock Prices for Company AT&T
 
 ## Authors:
-- Victor Yung [Github](https://github.com/vyung96)
-- Benson Ou-yang [Github](https://github.com/bensonouyang)
-- Ivan Cao [Github](https://github.com/ivancao98)
+- [Victor Yung](https://github.com/vyung96)
+- [Benson Ou-yang](https://github.com/bensonouyang)
+- [Ivan Cao](https://github.com/ivancao98)
 
 ## Table of Contents
 * [Introduction](#introduction)
