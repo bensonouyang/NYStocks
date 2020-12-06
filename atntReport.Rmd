@@ -6,18 +6,16 @@ author:
 - Ivan Cao
 
 abstract:
-  In our project, we are trying to determine if we are capable of developing a 
-  suitable model using regression analysis that allows for trades in the market 
-  to be fully automated. Mentioned under the data’s context on Kaggle, roughly 
-  30% of the trades are already automated. We gathered the data from the company
-   AT&T from the years 2013-2016 and added in the yearly fundamental data. 
-   Furthermore, we used visual graphs to analyze the residuals to help identify 
-   any underlying problems we came across when developing our model. By 
-   data-splitting, we acquired a model that was capable of predicting the 
-   closing prices roughly 69% of the time. The overall analysis of the model 
-   helped us subset and distinguish the effectiveness of each regressor we 
-   found to the response variable, however we were expecting our model to have 
-   a higher percentage predicting closing stock price of AT&T.  
+  The goal of our project is to develop a suitable model using regression analysis 
+  that would allow us to predict the closing stock prices of AT&T. We gathered 
+  the data from the years 2013-2016 in the price-split-adjusted dataset and added 
+  in the yearly fundamental data. Furthermore, we used visual graphs to analyze 
+  the residuals to help identify any underlying problems we came across when 
+  developing our model. Through data-splitting, our model could predict the 
+  closing prices roughly 69% of the time. The overall analysis of the model 
+  helped us subset and distinguish the effectiveness of each regressor we found 
+  to the response variable, however we were expecting our model to have a higher 
+  percentage predicting closing stock price of AT&T.
 
 output: 
   bookdown::pdf_document2:
@@ -42,12 +40,31 @@ knitr::opts_knit$set(progress = TRUE, verbose = TRUE)
 
 # Introduction
 
-The telecommunication industry is growing inevitably, and it is highly dependent
-on the rapid advancement of technology. The telecommunication industry is a key
-element for businesses and individuals to collaborate from anywhere across the
-world. As a result, there will be investment opportunities present, however it
-is not risk free. In our analysis, we designate our efforts toward one of the
+The telecommunication industry is growing inevitably, and it is highly dependent 
+on the rapid advancement of technology. The telecommunication industry is a key 
+element for businesses and individuals to collaborate from anywhere across the 
+world. As a result, there will be investment opportunities present, however it 
+is not risk free. In our analysis, we designate our efforts toward one of the 
 most well-known telecommunication companies around the world, AT&T. 
+We start by combining the data from \verb|fundamentals.csv| and 
+\verb|prices-split-adjusted.csv| of company AT&T. Our first model was used to 
+predict the \verb|close| price with \verb|open|, \verb|low|, \verb|high| and 
+\verb|volume|. Due to high multicollinearity, we chose to use information from 
+the \verb|fundamentals.csv| dataset. Since the data from \verb|fundamentals.csv| 
+is annual, we merged the previous year’s dataset with the following year’s 
+\verb|prices-split-adjusted.csv| dataset to form the full dataset. Due to high 
+multicollinearity with the columns from \verb|fundamentals.csv|, the linear model 
+can only take up to three variables from the \verb|fundamentals.csv| dataset. We 
+chose \verb|capital| \verb|surplus|, \verb|gross| \verb|margin| and 
+\verb|liabilities|. We also added \verb|volume| from 
+\verb|prices-split-adjusted.csv| to the model to see if the daily number of 
+stocks traded had any significance to affecting the daily \verb|close| price. 
+From the model adequacy plots, we see that the residuals meet the linear 
+regression assumptions. There were signs of leverage points so we checked for 
+those and removed them from the model which increased the R^2 by roughly 2%. We 
+ran stepwise selection on the model to see if it provides any different models 
+to compare to but the results left us with the full model. Next we did cross 
+validation to investigate the prediction performance of the model. 
 
 
 ```{r, echo = FALSE,message= FALSE}
@@ -753,15 +770,14 @@ that the value of the company has grown.
 
 # Conclusion
 
-In conclusion, our prediction model used 80% of the training data to predict the
-testing data with 69% accuracy. Although this is not perfect, the 69% accuracy 
-is tolerable considering that we only have 4 predictors to the model. 
-
-Some of the limitations of the data presented in this case includes not being 
-able to use the data prior to 2013 because the fundamental dataset lacked the 
-years 2010-2012, not having more information on day to day stock activities that
-can help better predict how volatile the stocks are, and how well the company’s 
-did in the earnings report.
+In our analysis of closing stock prices for AT&T we discovered a few underlying 
+issues limiting the progression of our model. Due to the lack of data presented 
+in the fundamental dataset from 2010 - 2012, we are given fragments of 
+information that would be incapable of integrating into our prediction analysis. 
+Categories such as company’s quarterly earnings report, and day to day stock 
+activities would have been a great addition to help explain the volatility of 
+the stocks and given us more flexibility with predictors to work with however 
+such options were unavailable.
 
 Listed below are some of the examples of better predictors of stock price 
 excluding the ones already included in the dataset.
@@ -776,19 +792,21 @@ common shares * stock price).
 share, higher EPS means stock has higher value than those in the same industry.
 \end{enumerate}
 
-By having quarterly information on the earnings reports of AT&T, the user of the
-dataset would have been able to better predict how the stock would react in the 
-following days after the earnings report is released. For context, if AT&T’s 
+By having quarterly information on the earnings reports of AT&T, the user of 
+the dataset would have been able to better predict how the stock would react in 
+the following days after the earnings report is released. For context, if AT&T’s 
 earning report were to beat the expectations, the stock would perform better on 
 the following days. In conjunction with adding extra predictors listed above, 
-the predictive power of the model would most likely increase.
+the predictive power of the model would most likely increase. 
 
-Although the dataset on Kaggle highlights that roughly 30% of daily trades are 
-performed by machine, the results of and the limitations of our study points 
-towards the complexity of the stock market that must be considered to make an 
-accurate forecast model. 
-
-
+In conclusion, the model we developed was successful at predicting the closing 
+prices of AT&T 69% of the time. Although our model is not able to predict the 
+missing data with more accuracy, our equation provides an adequate fit to the data, 
+there is no assurance that it will be a successful predictor as influential 
+factors first unknown when model building may affect the new predicted 
+observations [Montgomery, Peck, Vining, 2012](https://www.academia.edu/32079757/Introduction_to_Linear_Regression_Analysis_5th_ed_Douglas_C_Montgomery_Elizabeth_A_Peck_and_G_pdf). The results of and the limitations presented by the 
+datasets points towards the complexity of the stock market that must be 
+accounted for in order to build a successful prediction model. 
 
 
 # Appendix
@@ -823,3 +841,6 @@ accurate forecast model.
 \verb|knitr|  
 \verb|bookdown|
 
+## Textbook Reference:
+
+[Montgomery, Douglas C., et al. Introduction to Linear Regression Analysis. Pearson, 2012](https://www.academia.edu/32079757/Introduction_to_Linear_Regression_Analysis_5th_ed_Douglas_C_Montgomery_Elizabeth_A_Peck_and_G_pdf)
