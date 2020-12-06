@@ -1,5 +1,11 @@
 # Analysis to Predict Close Stock Prices for Company AT&T
 
+<p align="center">
+  <a href="https://raw.githubusercontent.com/bensonouyang/NYStocks/main/Figs/atntlogo.png">
+    <img src="Figs/atntlogo.png">
+  </a>
+</p>
+
 ## Authors:
 - [Victor Yung](https://github.com/vyung96)
 - [Benson Ou-yang](https://github.com/bensonouyang)
